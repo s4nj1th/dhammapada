@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import '../models/verses.dart';
+import '../models/chapters.dart';
 
 class ChapterScreen extends StatelessWidget {
   final int chapter;
   final List<Verse> verses;
+  final Chapter chapterName;
 
-  const ChapterScreen({super.key, required this.chapter, required this.verses});
+  const ChapterScreen({
+    super.key,
+    required this.chapter,
+    required this.verses,
+    required this.chapterName,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final chapterQuotes = verses.where((q) => q.chapter == chapter).toList();
+    final chapterVerses = verses
+        .where((verse) => verse.chapter == chapter)
+        .toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Chapter $chapter')),
+      appBar: AppBar(
+        title: Text('${chapterName.pali} - ${chapterName.english}'),
+      ),
       body: ListView.builder(
-        itemCount: chapterQuotes.length,
+        itemCount: chapterVerses.length,
         itemBuilder: (context, index) {
-          final quote = chapterQuotes[index];
-          return Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Text(
-              '${quote.id}. ${quote.text}',
-              style: const TextStyle(fontSize: 16),
-            ),
-          );
+          final verse = chapterVerses[index];
+          return ListTile(title: Text('${verse.id}. ${verse.text}'));
         },
       ),
     );

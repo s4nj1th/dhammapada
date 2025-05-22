@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/settings_screen.dart';
+import 'theme_notifier.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -10,23 +18,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return MaterialApp(
       title: 'Dhammapada',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system, // Uses system setting
+      themeMode: themeNotifier.themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.indigo,
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.indigo,
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        cardColor: const Color(0xFF1E1E1E),
+        appBarTheme: const AppBarTheme(
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
       ),
-      home: const HomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomeScreen(),
+        '/settings': (context) => const SettingsScreen(),
+      },
     );
   }
 }
