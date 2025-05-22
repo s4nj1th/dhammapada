@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../models/verses.dart';
 import '../models/chapters.dart';
 import 'chapter_screen.dart';
+import 'saved_verses.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Add a logo or app name here
+                  //TODO: Add a logo or app name here
                   Text(
                     'Dhammapada',
                     style: TextStyle(
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.book),
               title: const Text('Chapters'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context);
               },
             ),
             ListTile(
@@ -95,7 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/settings');
               },
             ),
-            // Add more options here if needed
+            ListTile(
+              leading: const Icon(Icons.bookmark),
+              title: const Text('Saved Verses'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SavedVersesScreen()),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -127,26 +137,51 @@ class _HomeScreenState extends State<HomeScreen> {
                   final chapterId = chapterIds[index];
                   final chapter = chapterMap[chapterId]!;
 
-                  return ListTile(
-                    title: Text(
-                      '$chapterId. ${chapter.pali} - ${chapter.english}',
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                    onTap: () {
-                      final chapterVerses = verses
-                          .where((verse) => verse.chapter == chapterId)
-                          .toList();
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChapterScreen(
-                            chapter: chapterId,
-                            verses: chapterVerses,
-                            chapterName: chapter,
-                          ),
+                    child: ListTile(
+                      title: RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(text: '$chapterId.  '),
+                            TextSpan(
+                              text: chapter.english,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            TextSpan(text: '  -  '),
+                            TextSpan(
+                              text: '${chapter.pali}  ',
+                              style: const TextStyle(
+                                fontFamily: 'Castoro',
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
+                      ),
+
+                      onTap: () {
+                        final chapterVerses = verses
+                            .where((verse) => verse.chapter == chapterId)
+                            .toList();
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChapterScreen(
+                              chapter: chapterId,
+                              verses: chapterVerses,
+                              chapterName: chapter,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               );

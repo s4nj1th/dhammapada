@@ -3,11 +3,15 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme_notifier.dart';
+import 'providers/saved_verses_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        ChangeNotifierProvider(create: (_) => SavedVersesProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -29,7 +33,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
       ),
       darkTheme: ThemeData(
@@ -37,7 +41,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
       ),
       initialRoute: '/',

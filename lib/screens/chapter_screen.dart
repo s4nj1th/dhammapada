@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/verses.dart';
 import '../models/chapters.dart';
+import 'verse_screen.dart';
 
 class ChapterScreen extends StatelessWidget {
   final int chapter;
@@ -28,7 +29,40 @@ class ChapterScreen extends StatelessWidget {
         itemCount: chapterVerses.length,
         itemBuilder: (context, index) {
           final verse = chapterVerses[index];
-          return ListTile(title: Text('${verse.id}. ${verse.text}'));
+
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: ListTile(
+              title: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${verse.id}. ',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
+                  ),
+                  Expanded(
+                    child: Text(
+                      verse.text,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Castoro',
+                        fontWeight: FontWeight.w500,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => VerseScreen(verse: verse)),
+                );
+              },
+            ),
+          );
         },
       ),
     );

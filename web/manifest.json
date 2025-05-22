@@ -1,6 +1,6 @@
 {
-    "name": "dhammapada",
-    "short_name": "dhammapada",
+    "name": "Dhammapada",
+    "short_name": "Dhammapada",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
