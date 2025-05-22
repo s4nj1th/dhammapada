@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/chapter.dart';
+import '../models/verses.dart';
 import '../models/chapters.dart';
 import 'chapter_screen.dart';
 
@@ -13,15 +13,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<Quote>> _futureQuotes;
+  late Future<List<Verse>> _futureQuotes;
 
-  Future<List<Quote>> loadQuotes() async {
-    final jsonString = await rootBundle.loadString('assets/quotes.json');
+  Future<List<Verse>> loadQuotes() async {
+    final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
-    final quotes = jsonData.entries
-        .map((entry) => Quote.fromJson(entry.key, entry.value))
+    final verses = jsonData.entries
+        .map((entry) => Verse.fromJson(entry.key, entry.value))
         .toList();
-    return quotes;
+    return verses;
   }
 
   Future<Map<int, Chapter>> loadChapters() async {
@@ -46,16 +46,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chapters')),
-      body: FutureBuilder<List<Quote>>(
+      body: FutureBuilder<List<Verse>>(
         future: _futureQuotes,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading quotes'));
+            return const Center(child: Text('Error loading verses'));
           } else {
-            final quotes = snapshot.data!;
-            final chapters = quotes.map((q) => q.chapter).toSet().toList()
+            final verses = snapshot.data!;
+            final chapters = verses.map((q) => q.chapter).toSet().toList()
               ..sort();
 
             return ListView.builder(
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            ChapterScreen(chapter: chapter, quotes: quotes),
+                            ChapterScreen(chapter: chapter, verses: verses),
                       ),
                     );
                   },

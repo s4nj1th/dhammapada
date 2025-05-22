@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/chapter.dart';
+import '../models/verses.dart';
 
 class ChapterScreen extends StatelessWidget {
   final int chapter;
-  final List<Quote> quotes;
+  final List<Verse> verses;
 
-  const ChapterScreen({super.key, required this.chapter, required this.quotes});
+  const ChapterScreen({super.key, required this.chapter, required this.verses});
 
   @override
   Widget build(BuildContext context) {
-    final chapterQuotes = quotes.where((q) => q.chapter == chapter).toList();
+    final chapterQuotes = verses.where((q) => q.chapter == chapter).toList();
 
     return Scaffold(
       appBar: AppBar(title: Text('Chapter $chapter')),
