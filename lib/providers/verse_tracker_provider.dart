@@ -5,14 +5,9 @@ class VerseTrackerProvider with ChangeNotifier {
 
   List<HistoryEntry> get viewHistory => List.unmodifiable(_viewHistory);
 
-  int getLastViewed(int chapterId) {
-    for (var i = _viewHistory.length - 1; i >= 0; i--) {
-      final entry = _viewHistory[i];
-      if (entry.chapterId == chapterId && entry.verseIds.isNotEmpty) {
-        return int.tryParse(entry.verseIds.last) ?? 1;
-      }
-    }
-    return 1;
+  int getLastViewed() {
+    if (_viewHistory.isEmpty) return 1;
+    return int.tryParse(_viewHistory.last.verseIds.last) ?? 1;
   }
 
   void recordVerseView(int chapterId, String verseId) {

@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int _selectedIndex = 0;
   int _selectedChapterId = 1;
+  String _verseInput = '';
 
   late final PageController _pageController;
 
@@ -63,90 +64,122 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
   ) {
     final chapterIds = chapterMap.keys.toList()..sort();
-    final currentChapter = chapterMap[_selectedChapterId]!;
+    final tracker = Provider.of<VerseTrackerProvider>(context, listen: false);
+    final lastVerse = tracker.getLastViewed();
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () {
-            final tracker = Provider.of<VerseTrackerProvider>(
-              context,
-              listen: false,
-            );
-            final chapterVerses = verses
-                .where((verse) => verse.chapter == _selectedChapterId)
-                .toList();
-
-            if (chapterVerses.isEmpty) return;
-
-            final lastViewedId = tracker.getLastViewed(_selectedChapterId);
-            final initialIndex = chapterVerses.indexWhere(
-              (v) => int.parse(v.id) == lastViewedId,
-            );
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => VerseScreen(
-                  chapterId: _selectedChapterId,
-                  chapterMap: chapterMap,
-                  initialIndex: initialIndex != -1 ? initialIndex : 0,
-                ),
-              ),
-            );
-          },
-          child: Card(
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => VerseScreen(
+                      chapterMap: chapterMap,
+                      initialVerseId: lastVerse,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 8),
+                  Icon(lastVerse == 1 ? Icons.auto_awesome : Icons.history),
+                  SizedBox(width: 8),
                   Text(
-                    currentChapter.pali,
-                    style: const TextStyle(
-                      fontFamily: 'Castoro',
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 28,
-                    ),
-                    textAlign: TextAlign.center,
+                    lastVerse == 1
+                        ? 'Start a new'
+                        : 'Continue where you left off',
                   ),
                 ],
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 100.0),
-          child: DropdownButton<int>(
-            value: _selectedChapterId,
-            isExpanded: true,
-            items: chapterIds.map((id) {
-              final chapter = chapterMap[id]!;
-              return DropdownMenuItem(
-                value: id,
-                child: Text('$id. ${chapter.english}'),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  _selectedChapterId = value;
-                });
-              }
-            },
+          const Padding(
+            padding: EdgeInsets.only(top: 30),
+            child: Text('Jump to Chapter'),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 100.0),
+            child: DropdownButton<int>(
+              value: _selectedChapterId,
+              isExpanded: true,
+              items: chapterIds.map((id) {
+                final chapter = chapterMap[id]!;
+                return DropdownMenuItem(
+                  value: id,
+                  child: Text('$id. ${chapter.english}'),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedChapterId = value);
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: ElevatedButton(
+              onPressed: () {
+                final verseId = verses
+                    .firstWhere(
+                      (v) => v.chapter == _selectedChapterId,
+                      orElse: () => verses.first,
+                    )
+                    .id;
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => VerseScreen(
+                      chapterMap: chapterMap,
+                      initialVerseId: int.parse(verseId),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Go to Chapter'),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 60),
+            child: Text('Jump to Verse', textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 100.0),
+            child: TextField(
+              decoration: const InputDecoration(labelText: 'Verse Number'),
+              keyboardType: TextInputType.number,
+              onChanged: (val) => _verseInput = val,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: ElevatedButton(
+              onPressed: () {
+                final targetVerse = int.tryParse(_verseInput) ?? 0;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => VerseScreen(
+                      chapterMap: chapterMap,
+                      initialVerseId: targetVerse,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Go to Verse'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -190,11 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               body: PageView(
                 controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                  });
-                },
+                onPageChanged: (index) =>
+                    setState(() => _selectedIndex = index),
                 children: [
                   _buildSliderPage(verses, chapters, context),
                   SavedVersesScreen(chapterMap: chapters),
@@ -217,7 +247,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 items: List.generate(3, (index) {
                   final isSelected = _selectedIndex == index;
                   final icons = [Icons.book, Icons.bookmark, Icons.history];
-
                   return BottomNavigationBarItem(
                     label: '',
                     icon: AnimatedContainer(
@@ -229,9 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                               ).colorScheme.primary.withAlpha(38)
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(
-                          8,
-                        ), // rounded rectangle for polish
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         icons[index],

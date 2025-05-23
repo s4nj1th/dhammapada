@@ -58,8 +58,7 @@ class SavedVersesScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => VerseScreen(
-                            chapterId: verse.chapter,
-                            initialIndex: initialIndex,
+                            initialVerseId: initialIndex,
                             chapterMap: chapterMap,
                           ),
                         ),
