@@ -12,4 +12,10 @@ class Verse {
       text: json['text'].replaceAll(r'\n', '\n'),
     );
   }
+
+  factory Verse.fromJsonMap(Map<String, dynamic> json) {
+    return Verse(id: json['id'], chapter: json['chapter'], text: json['text']);
+  }
+
+  Map<String, dynamic> toJson() => {'id': id, 'chapter': chapter, 'text': text};
 }

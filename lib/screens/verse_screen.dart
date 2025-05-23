@@ -8,7 +8,6 @@ import '../models/chapters.dart';
 import '../providers/saved_verses_provider.dart';
 import '../providers/verse_tracker_provider.dart';
 
-// Abstract base class for pages (either verse or chapter divider)
 abstract class PageItem {}
 
 class VersePage extends PageItem {
@@ -23,17 +22,24 @@ class ChapterDivider extends PageItem {
 
 class VerseScreen extends StatefulWidget {
   final int initialVerseId;
+  final int? initialChapterId;
   final Map<int, Chapter> chapterMap;
 
   const VerseScreen({
     super.key,
     required this.initialVerseId,
     required this.chapterMap,
+    this.initialChapterId,
   });
 
   @override
   State<VerseScreen> createState() => _VerseScreenState();
 }
+
+int _leftSkipCount = 0;
+int _rightSkipCount = 0;
+int _lastLeftTapTime = 0;
+int _lastRightTapTime = 0;
 
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
@@ -54,7 +60,6 @@ class _VerseScreenState extends State<VerseScreen> {
         .map((e) => Verse.fromJson(e.key, e.value))
         .toList();
 
-    // Sort verses to ensure correct order
     allVerses.sort((a, b) {
       if (a.chapter == b.chapter) {
         return int.parse(a.id).compareTo(int.parse(b.id));
@@ -62,7 +67,6 @@ class _VerseScreenState extends State<VerseScreen> {
       return a.chapter.compareTo(b.chapter);
     });
 
-    // Build pages list with chapter dividers
     _pages = [];
     int? lastChapter;
     for (final verse in allVerses) {
@@ -76,40 +80,45 @@ class _VerseScreenState extends State<VerseScreen> {
       _pages.add(VersePage(verse));
     }
 
-    _currentIndex = _pages.indexWhere(
-      (item) =>
-          item is VersePage &&
-          int.parse(item.verse.id) == widget.initialVerseId,
-    );
+    _currentIndex = widget.initialChapterId != null
+        ? _pages.indexWhere(
+            (item) =>
+                item is ChapterDivider &&
+                item.chapter.id == widget.initialChapterId,
+          )
+        : _pages.indexWhere(
+            (item) =>
+                item is VersePage &&
+                int.parse(item.verse.id) == widget.initialVerseId,
+          );
+
     if (_currentIndex == -1) _currentIndex = 0;
 
     _pageController = PageController(initialPage: _currentIndex);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentItem = _pages[_currentIndex];
-      if (currentItem is VersePage) {
-        Provider.of<VerseTrackerProvider>(
-          context,
-          listen: false,
-        ).recordVerseView(currentItem.verse.chapter, currentItem.verse.id);
-      }
+      _recordIfVersePage(_currentIndex);
     });
 
     _pageController.addListener(() {
       final page = _pageController.page?.round();
       if (page != null && page != _currentIndex) {
         setState(() => _currentIndex = page);
-        final currentItem = _pages[page];
-        if (currentItem is VersePage) {
-          Provider.of<VerseTrackerProvider>(
-            context,
-            listen: false,
-          ).recordVerseView(currentItem.verse.chapter, currentItem.verse.id);
-        }
+        _recordIfVersePage(page);
       }
     });
 
     setState(() => _isLoading = false);
+  }
+
+  void _recordIfVersePage(int pageIndex) {
+    final currentItem = _pages[pageIndex];
+    if (currentItem is VersePage) {
+      Provider.of<VerseTrackerProvider>(
+        context,
+        listen: false,
+      ).recordVerseView(currentItem.verse.chapter, currentItem.verse.id);
+    }
   }
 
   Widget _buildPage(PageItem item) {
@@ -134,7 +143,7 @@ class _VerseScreenState extends State<VerseScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: Text(
                 'Chapter ${item.chapter.id}',
                 style: const TextStyle(fontSize: 16),
@@ -142,7 +151,7 @@ class _VerseScreenState extends State<VerseScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              item.chapter.pali, // assuming this is the Pali name
+              item.chapter.pali,
               style: const TextStyle(
                 fontSize: 28,
                 fontFamily: 'Castoro',
@@ -192,7 +201,9 @@ class _VerseScreenState extends State<VerseScreen> {
                 IconButton(
                   icon: Icon(
                     isSaved ? Icons.bookmark : Icons.bookmark_border,
-                    color: isSaved ? Colors.amberAccent : Colors.white,
+                    color: isSaved
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
                     size: 28,
                   ),
                   onPressed: () {
@@ -207,10 +218,65 @@ class _VerseScreenState extends State<VerseScreen> {
           : Column(
               children: [
                 Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _pages.length,
-                    itemBuilder: (context, index) => _buildPage(_pages[index]),
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        itemCount: _pages.length,
+                        itemBuilder: (context, index) =>
+                            _buildPage(_pages[index]),
+                      ),
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 60,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            final now = DateTime.now().millisecondsSinceEpoch;
+                            if (now - _lastLeftTapTime < 500) {
+                              _leftSkipCount++;
+                            } else {
+                              _leftSkipCount = 1;
+                            }
+                            _lastLeftTapTime = now;
+
+                            final targetPage = (_currentIndex - _leftSkipCount)
+                                .clamp(0, _pages.length - 1);
+                            _pageController.jumpToPage(targetPage);
+                            setState(() {
+                              _currentIndex = targetPage;
+                            });
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 60,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            final now = DateTime.now().millisecondsSinceEpoch;
+                            if (now - _lastRightTapTime < 500) {
+                              _rightSkipCount++;
+                            } else {
+                              _rightSkipCount = 1;
+                            }
+                            _lastRightTapTime = now;
+
+                            final targetPage = (_currentIndex + _rightSkipCount)
+                                .clamp(0, _pages.length - 1);
+                            _pageController.jumpToPage(targetPage);
+                            setState(() {
+                              _currentIndex = targetPage;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Padding(

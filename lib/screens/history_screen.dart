@@ -101,7 +101,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 MaterialPageRoute(
                   builder: (_) => VerseScreen(
                     chapterMap: widget.chapterMap,
-                    initialVerseId: initialIndex != -1 ? initialIndex : 0,
+                    initialVerseId: initialIndex + 1,
                   ),
                 ),
               );
