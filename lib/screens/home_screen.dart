@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/verses.dart';
 import '../models/chapters.dart';
-import 'chapter_screen.dart';
+import 'verse_screen.dart';
 import 'saved_verses.dart';
+import 'history_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/verse_tracker_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +20,25 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Verse>> _futureVerses;
   late Future<Map<int, Chapter>> _futureChapters;
 
+  int _selectedIndex = 0;
+  int _selectedChapterId = 1;
+
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureVerses = loadVerses();
+    _futureChapters = loadChapters();
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<List<Verse>> loadVerses() async {
     final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
@@ -28,167 +50,204 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<Map<int, Chapter>> loadChapters() async {
     final jsonString = await rootBundle.loadString('assets/chapters.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
-
     final chapters = <int, Chapter>{};
     jsonData.forEach((key, value) {
       chapters[int.parse(key)] = Chapter.fromJson(key, value);
     });
-
     return chapters;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _futureVerses = loadVerses();
-    _futureChapters = loadChapters();
-  }
+  Widget _buildSliderPage(
+    List<Verse> verses,
+    Map<int, Chapter> chapterMap,
+    BuildContext context,
+  ) {
+    final chapterIds = chapterMap.keys.toList()..sort();
+    final currentChapter = chapterMap[_selectedChapterId]!;
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chapters')),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () {
+            final tracker = Provider.of<VerseTrackerProvider>(
+              context,
+              listen: false,
+            );
+            final chapterVerses = verses
+                .where((verse) => verse.chapter == _selectedChapterId)
+                .toList();
+
+            if (chapterVerses.isEmpty) return;
+
+            final lastViewedId = tracker.getLastViewed(_selectedChapterId);
+            final initialIndex = chapterVerses.indexWhere(
+              (v) => int.parse(v.id) == lastViewedId,
+            );
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => VerseScreen(
+                  chapterId: _selectedChapterId,
+                  chapterMap: chapterMap,
+                  initialIndex: initialIndex != -1 ? initialIndex : 0,
+                ),
               ),
+            );
+          },
+          child: Card(
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  //TODO: Add a logo or app name here
-                  Text(
-                    'Dhammapada',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   const SizedBox(height: 8),
                   Text(
-                    'Verses of the Buddha',
-                    style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimary.withAlpha(200),
-                      fontSize: 14,
+                    currentChapter.pali,
+                    style: const TextStyle(
+                      fontFamily: 'Castoro',
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 28,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text('Chapters'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bookmark),
-              title: const Text('Saved Verses'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SavedVersesScreen()),
-                );
-              },
-            ),
-          ],
+          ),
         ),
-      ),
-      body: FutureBuilder<List<Verse>>(
-        future: _futureVerses,
-        builder: (context, versesSnapshot) {
-          if (versesSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (versesSnapshot.hasError) {
-            return const Center(child: Text('Error loading verses'));
-          }
-
-          return FutureBuilder<Map<int, Chapter>>(
-            future: _futureChapters,
-            builder: (context, chaptersSnapshot) {
-              if (chaptersSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (chaptersSnapshot.hasError) {
-                return const Center(child: Text('Error loading chapters'));
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 100.0),
+          child: DropdownButton<int>(
+            value: _selectedChapterId,
+            isExpanded: true,
+            items: chapterIds.map((id) {
+              final chapter = chapterMap[id]!;
+              return DropdownMenuItem(
+                value: id,
+                child: Text('$id. ${chapter.english}'),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedChapterId = value;
+                });
               }
+            },
+          ),
+        ),
+      ],
+    );
+  }
 
-              final verses = versesSnapshot.data!;
-              final chapterMap = chaptersSnapshot.data!;
-              final chapterIds = chapterMap.keys.toList()..sort();
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Verse>>(
+      future: _futureVerses,
+      builder: (context, versesSnapshot) {
+        if (!versesSnapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final verses = versesSnapshot.data!;
 
-              return ListView.builder(
-                itemCount: chapterIds.length,
-                itemBuilder: (context, index) {
-                  final chapterId = chapterIds[index];
-                  final chapter = chapterMap[chapterId]!;
+        return FutureBuilder<Map<int, Chapter>>(
+          future: _futureChapters,
+          builder: (context, chaptersSnapshot) {
+            if (!chaptersSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final chapters = chaptersSnapshot.data!;
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    child: ListTile(
-                      title: RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(text: '$chapterId.  '),
-                            TextSpan(
-                              text: chapter.english,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            TextSpan(text: '  -  '),
-                            TextSpan(
-                              text: '${chapter.pali}  ',
-                              style: const TextStyle(
-                                fontFamily: 'Castoro',
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
+            if (!chapters.containsKey(_selectedChapterId)) {
+              _selectedChapterId = chapters.keys.first;
+            }
+
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(
+                  _selectedIndex == 0
+                      ? 'Chapters'
+                      : _selectedIndex == 1
+                      ? 'Saved Verses'
+                      : 'History',
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () => Navigator.pushNamed(context, '/settings'),
+                  ),
+                ],
+              ),
+              body: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
+                children: [
+                  _buildSliderPage(verses, chapters, context),
+                  SavedVersesScreen(chapterMap: chapters),
+                  HistoryScreen(chapterMap: chapters),
+                ],
+              ),
+              bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                currentIndex: _selectedIndex,
+                onTap: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  });
+                },
+                items: List.generate(3, (index) {
+                  final isSelected = _selectedIndex == index;
+                  final icons = [Icons.book, Icons.bookmark, Icons.history];
+
+                  return BottomNavigationBarItem(
+                    label: '',
+                    icon: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withAlpha(38)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(
+                          8,
+                        ), // rounded rectangle for polish
                       ),
-
-                      onTap: () {
-                        final chapterVerses = verses
-                            .where((verse) => verse.chapter == chapterId)
-                            .toList();
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChapterScreen(
-                              chapter: chapterId,
-                              verses: chapterVerses,
-                              chapterName: chapter,
-                            ),
-                          ),
-                        );
-                      },
+                      child: Icon(
+                        icons[index],
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey,
+                        size: 28,
+                      ),
                     ),
                   );
-                },
-              );
-            },
-          );
-        },
-      ),
+                }),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

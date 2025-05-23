@@ -4,6 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme_notifier.dart';
 import 'providers/saved_verses_provider.dart';
+import 'providers/verse_tracker_provider.dart';
 
 void main() {
   runApp(
@@ -11,6 +12,10 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
         ChangeNotifierProvider(create: (_) => SavedVersesProvider()),
+        ChangeNotifierProvider(
+          create: (_) => VerseTrackerProvider(),
+          child: const MyApp(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -33,7 +38,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          titleTextStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.black,
+          ),
         ),
       ),
       darkTheme: ThemeData(
@@ -41,7 +50,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          titleTextStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            color: Colors.white,
+          ),
         ),
       ),
       initialRoute: '/',

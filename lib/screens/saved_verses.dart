@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/chapters.dart';
 import '../providers/saved_verses_provider.dart';
 import 'verse_screen.dart';
 
 class SavedVersesScreen extends StatelessWidget {
-  const SavedVersesScreen({super.key});
+  final Map<int, Chapter> chapterMap;
+
+  const SavedVersesScreen({super.key, required this.chapterMap});
 
   @override
   Widget build(BuildContext context) {
     final savedVerses = context.watch<SavedVersesProvider>().savedVerses;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved Verses')),
       body: savedVerses.isEmpty
           ? const Center(child: Text('No saved verses'))
           : ListView.builder(
               itemCount: savedVerses.length,
               itemBuilder: (context, index) {
                 final verse = savedVerses[index];
+                final chapterVerses = savedVerses
+                    .where((v) => v.chapter == verse.chapter)
+                    .toList();
+                final initialIndex = chapterVerses.indexOf(verse);
+
                 return Card(
                   margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 16,
+                    vertical: 8,
                   ),
                   child: ListTile(
                     title: Row(
@@ -29,9 +36,7 @@ class SavedVersesScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${verse.id}. ',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyLarge?.copyWith(),
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         Expanded(
                           child: Text(
@@ -42,6 +47,7 @@ class SavedVersesScreen extends StatelessWidget {
                               fontFamily: 'Castoro',
                               fontWeight: FontWeight.w500,
                               fontSize: 16,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ),
@@ -51,7 +57,11 @@ class SavedVersesScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => VerseScreen(verse: verse),
+                          builder: (_) => VerseScreen(
+                            chapterId: verse.chapter,
+                            initialIndex: initialIndex,
+                            chapterMap: chapterMap,
+                          ),
                         ),
                       );
                     },
