@@ -27,6 +27,20 @@ class SettingsScreen extends StatelessWidget {
               themeNotifier.toggleTheme(value);
             },
           ),
+          if (isDark)
+            SwitchListTile(
+              title: const Text('AMOLED Mode'),
+              value: themeNotifier.isAmoled,
+              onChanged: (value) => themeNotifier.toggleAmoled(value),
+            )
+          else
+            SwitchListTile(
+              title: const Text('AMOLED Mode'),
+              value: themeNotifier.isAmoled,
+              enableFeedback: false,
+              onChanged: null,
+            ),
+
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About'),

@@ -23,7 +23,7 @@ class SavedVersesScreen extends StatelessWidget {
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: 8,
                     vertical: 8,
                   ),
                   child: ListTile(
@@ -32,7 +32,9 @@ class SavedVersesScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${verse.id}.',
-                          style: Theme.of(context).textTheme.bodyLarge,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                         Expanded(
                           child: Text(

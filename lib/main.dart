@@ -25,39 +25,71 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return MaterialApp(
       title: 'Dhammapada',
       debugShowCheckedModeBanner: false,
       themeMode: themeNotifier.themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.indigo,
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.indigo,
-        useMaterial3: true,
-        appBarTheme: const AppBarTheme(
-          titleTextStyle: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-            color: Colors.white,
-          ),
-        ),
-      ),
+      theme: _buildLightTheme(),
+      darkTheme: themeNotifier.isAmoled
+          ? _buildAmoledTheme()
+          : _buildDarkTheme(),
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
       },
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      brightness: Brightness.light,
+      primarySwatch: Colors.indigo,
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        titleTextStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primarySwatch: Colors.indigo,
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF121212),
+        titleTextStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  ThemeData _buildAmoledTheme() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primarySwatch: Colors.indigo,
+      useMaterial3: true,
+      scaffoldBackgroundColor: Colors.black,
+      canvasColor: Colors.black,
+      cardColor: const Color(0xFF1A1A1A),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.black,
+        titleTextStyle: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }

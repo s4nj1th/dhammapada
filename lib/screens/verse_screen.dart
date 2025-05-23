@@ -124,12 +124,12 @@ class _VerseScreenState extends State<VerseScreen> {
   Widget _buildPage(PageItem item) {
     if (item is VersePage) {
       return Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
         child: Text(
           item.verse.text,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 22,
             fontFamily: 'Castoro',
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w500,

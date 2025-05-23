@@ -180,40 +180,47 @@ class _HomeScreenState extends State<HomeScreen> {
           HistoryScreen(chapterMap: chapters),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
-          _pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        },
-        items: List.generate(3, (index) {
-          final isSelected = _selectedIndex == index;
-          return BottomNavigationBarItem(
-            label: '',
-            icon: AnimatedContainer(
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory,
+          highlightColor: Colors.transparent,
+          splashColor: Colors.transparent,
+        ),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            setState(() => _selectedIndex = index);
+            _pageController.animateToPage(
+              index,
               duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary.withAlpha(38)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+              curve: Curves.easeInOut,
+            );
+          },
+          items: List.generate(3, (index) {
+            final isSelected = _selectedIndex == index;
+            return BottomNavigationBarItem(
+              label: '',
+              icon: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary.withAlpha(38)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icons[index],
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey,
+                  size: 28,
+                ),
               ),
-              child: Icon(
-                icons[index],
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey,
-                size: 28,
-              ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
