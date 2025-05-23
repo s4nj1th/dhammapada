@@ -1,77 +1,58 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../models/verses.dart';
 import '../models/chapters.dart';
 import '../providers/verse_tracker_provider.dart';
 import 'verse_screen.dart';
 
-class HistoryScreen extends StatefulWidget {
+class HistoryScreen extends StatelessWidget {
   final Map<int, Chapter> chapterMap;
 
   const HistoryScreen({super.key, required this.chapterMap});
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
-}
-
-class _HistoryScreenState extends State<HistoryScreen> {
-  List<Verse> _allVerses = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadVerses();
-  }
-
-  Future<void> _loadVerses() async {
-    final jsonString = await rootBundle.loadString('assets/verses.json');
-    final Map<String, dynamic> jsonData = json.decode(jsonString);
-    final allVerses = jsonData.entries
-        .map((e) => Verse.fromJson(e.key, e.value))
+  Widget build(BuildContext context) {
+    final rawHistory = Provider.of<VerseTrackerProvider>(context).viewHistory
+        .expand(
+          (entry) => entry.verseIds.map(
+            (id) => _VerseView(entry.chapterId, int.tryParse(id)),
+          ),
+        )
+        .where((v) => v.verseId != null)
         .toList();
 
-    setState(() {
-      _allVerses = allVerses;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final history = Provider.of<VerseTrackerProvider>(
-      context,
-    ).viewHistory.reversed.toList();
-
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (history.isEmpty) {
+    if (rawHistory.isEmpty) {
       return const Center(child: Text("No history yet."));
     }
 
+    // Sort and group contiguous verses
+    rawHistory.sort((a, b) {
+      int cmp = a.chapterId.compareTo(b.chapterId);
+      return cmp != 0 ? cmp : a.verseId!.compareTo(b.verseId!);
+    });
+
+    final List<_GroupedEntry> grouped = [];
+    for (final view in rawHistory) {
+      if (grouped.isEmpty ||
+          grouped.last.chapterId != view.chapterId ||
+          view.verseId! != grouped.last.verseIds.last + 1) {
+        grouped.add(_GroupedEntry(view.chapterId, [view.verseId!]));
+      } else {
+        grouped.last.verseIds.add(view.verseId!);
+      }
+    }
+
+    final reversedGrouped = grouped.reversed.toList();
+
     return ListView.builder(
-      itemCount: history.length,
+      itemCount: reversedGrouped.length,
       itemBuilder: (context, index) {
-        final entry = history[index];
-
-        String subtitleText;
-        final verseCount = entry.verseIds.length;
-
-        if (verseCount == 1) {
-          subtitleText = 'Verse: ${entry.verseIds[0]}';
-        } else if (verseCount == 2) {
-          subtitleText = 'Verses: ${entry.verseIds[0]}, ${entry.verseIds[1]}';
-        } else if (verseCount > 2) {
-          subtitleText =
-              'Verses: ${entry.verseIds[0]} to ${entry.verseIds.last}';
-        } else {
-          subtitleText = 'No verses';
-        }
+        final group = reversedGrouped[index];
+        final start = group.verseIds.first;
+        final end = group.verseIds.last;
+        final subtitle = start == end
+            ? 'Verse: $start'
+            : 'Verses: $start to $end';
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -79,29 +60,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
-            title: Text('Chapter ${entry.chapterId}'),
-            subtitle: Text(subtitleText),
+            title: Text('Chapter ${group.chapterId}'),
+            subtitle: Text(subtitle),
             onTap: () {
-              final chapterVerses = _allVerses
-                  .where((v) => v.chapter == entry.chapterId)
-                  .toList();
-
-              final lastVerseId = entry.verseIds.isNotEmpty
-                  ? entry.verseIds.last
-                  : null;
-
-              final initialIndex = lastVerseId != null
-                  ? chapterVerses.indexWhere(
-                      (v) => v.id == lastVerseId.toString(),
-                    )
-                  : 0;
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => VerseScreen(
-                    chapterMap: widget.chapterMap,
-                    initialVerseId: initialIndex + 1,
+                    chapterMap: chapterMap,
+                    // initialChapterId: group.chapterId,
+                    initialVerseId: end,
                   ),
                 ),
               );
@@ -111,4 +79,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
       },
     );
   }
+}
+
+class _VerseView {
+  final int chapterId;
+  final int? verseId;
+
+  _VerseView(this.chapterId, this.verseId);
+}
+
+class _GroupedEntry {
+  final int chapterId;
+  final List<int> verseIds;
+
+  _GroupedEntry(this.chapterId, this.verseIds);
 }

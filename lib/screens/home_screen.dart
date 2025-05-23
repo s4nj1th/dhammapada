@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSliderPage(List<Verse> verses, Map<int, Chapter> chapterMap) {
     final tracker = Provider.of<VerseTrackerProvider>(context, listen: false);
-    final lastViewed = tracker.getLastViewed(); // LastViewed? object
+    final lastViewed = tracker.getLastViewed();
     final chapterIds = chapterMap.keys.toList()..sort();
 
     return Center(
@@ -61,18 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
               lastViewed == null ? 'Start anew' : 'Continue where you left off',
             ),
             onPressed: () {
-              if (lastViewed == null) {
+              if (lastViewed != null && lastViewed.verseId != null) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => VerseScreen(
-                      initialChapterId: 1,
                       chapterMap: chapterMap,
-                      initialVerseId: 1,
+                      initialVerseId: int.parse(lastViewed.verseId!),
                     ),
                   ),
                 );
-              } else if (lastViewed.verseId == null) {
+              } else if (lastViewed != null && lastViewed.verseId == null) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -84,15 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 );
               } else {
-                final verseIdInt = int.tryParse(lastViewed.verseId!) ?? 1;
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => VerseScreen(
-                      initialChapterId: lastViewed.chapterId,
+                      initialChapterId: 1,
                       chapterMap: chapterMap,
-                      initialVerseId: verseIdInt + 1,
+                      initialVerseId: 1,
                     ),
                   ),
                 );

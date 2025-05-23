@@ -12,10 +12,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
         ChangeNotifierProvider(create: (_) => SavedVersesProvider()),
-        ChangeNotifierProvider(
-          create: (_) => VerseTrackerProvider(),
-          child: const MyApp(),
-        ),
+        ChangeNotifierProvider(create: (_) => VerseTrackerProvider()),
       ],
       child: const MyApp(),
     ),
@@ -28,7 +25,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-
     return MaterialApp(
       title: 'Dhammapada',
       debugShowCheckedModeBanner: false,

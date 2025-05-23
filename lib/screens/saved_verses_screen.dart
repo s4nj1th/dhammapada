@@ -20,10 +20,6 @@ class SavedVersesScreen extends StatelessWidget {
               itemCount: savedVerses.length,
               itemBuilder: (context, index) {
                 final verse = savedVerses[index];
-                final chapterVerses = savedVerses
-                    .where((v) => v.chapter == verse.chapter)
-                    .toList();
-                final initialIndex = chapterVerses.indexOf(verse);
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
@@ -35,20 +31,19 @@ class SavedVersesScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${verse.id}. ',
+                          '${verse.id}.',
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
                         Expanded(
                           child: Text(
-                            verse.text,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            '\n${verse.text}\n',
                             style: const TextStyle(
                               fontFamily: 'Castoro',
                               fontWeight: FontWeight.w500,
-                              fontSize: 16,
+                              fontSize: 20,
                               fontStyle: FontStyle.italic,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
@@ -58,7 +53,7 @@ class SavedVersesScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => VerseScreen(
-                            initialVerseId: initialIndex,
+                            initialVerseId: int.parse(verse.id),
                             chapterMap: chapterMap,
                           ),
                         ),
