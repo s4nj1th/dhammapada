@@ -1,4 +1,4 @@
-name: Dhammapada
+name: dhammapada
 description: "A Dhammapada App"
 publish_to: 'none'
 
@@ -15,18 +15,10 @@ dependencies:
   provider: ^6.1.0
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^5.0.0
-
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon.png"
-  adaptive_icon_foreground: "assets/ic_foreground.png"
-  adaptive_icon_background: "assets/ic_background.png"
 
 flutter:
   uses-material-design: true
@@ -34,7 +26,6 @@ flutter:
   assets:
     - assets/chapters.json
     - assets/verses.json
-    - assets/icon.png
 
   fonts:
     - family: Castoro
