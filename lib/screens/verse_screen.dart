@@ -1,4 +1,4 @@
-// Same imports...
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,7 +22,6 @@ class ChapterDivider extends PageItem {
   ChapterDivider(this.chapter);
 }
 
-// Skip counter globals
 int _leftSkipCount = 0;
 int _rightSkipCount = 0;
 int _lastLeftTapTime = 0;
@@ -51,15 +50,30 @@ class _VerseScreenState extends State<VerseScreen> {
   int _currentIndex = 0;
   bool _isLoading = true;
 
+  double _sliderOpacity = 0.0; // Start hidden
+  Timer? _hideSliderTimer;
+
   @override
   void initState() {
     super.initState();
     _loadVerses();
   }
 
+  void _resetSliderFadeTimer() {
+    _hideSliderTimer?.cancel();
+    setState(() => _sliderOpacity = 1.0); // show slider
+
+    _hideSliderTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() => _sliderOpacity = 0.0); // hide slider after 3s
+      }
+    });
+  }
+
   Future<void> _loadVerses() async {
     final provider = Provider.of<TranslationsProvider>(context, listen: false);
-    final selectedTranslations = provider.selectedTranslations;
+    final selectedTranslations = provider.selectedTranslations.toSet();
+    final translationOrder = provider.translationOrder;
 
     final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
@@ -88,7 +102,8 @@ class _VerseScreenState extends State<VerseScreen> {
     }
 
     final Map<String, Map<String, String>> translations = {};
-    for (final key in selectedTranslations) {
+    for (final key in translationOrder) {
+      if (!selectedTranslations.contains(key)) continue;
       final data = await rootBundle.loadString('assets/$key.json');
       final Map<String, dynamic> map = json.decode(data);
       translations[key] = map.map((k, v) => MapEntry(k, v.toString()));
@@ -127,6 +142,7 @@ class _VerseScreenState extends State<VerseScreen> {
       if (page != null && page != _currentIndex && mounted) {
         setState(() => _currentIndex = page);
         _recordIfVersePage(page);
+        _resetSliderFadeTimer(); // show slider on page change
       }
     });
   }
@@ -143,9 +159,13 @@ class _VerseScreenState extends State<VerseScreen> {
 
   List<Widget> _buildTranslations(String verseId) {
     final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final selectedTranslations = provider.selectedTranslations.toSet();
+    final translationOrder = provider.translationOrder;
     final widgets = <Widget>[];
 
-    for (final key in provider.selectedTranslations) {
+    for (final key in translationOrder) {
+      if (!selectedTranslations.contains(key)) continue;
+
       final text = _translationsByKey[key]?[verseId];
       if (text != null) {
         widgets.addAll([
@@ -153,10 +173,7 @@ class _VerseScreenState extends State<VerseScreen> {
           const Divider(thickness: 1),
           const SizedBox(height: 6),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 30),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -217,18 +234,15 @@ class _VerseScreenState extends State<VerseScreen> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Text(
-              'Chapter ${item.chapter.id}',
-              style: const TextStyle(fontSize: 16),
-            ),
+          Text(
+            'Chapter ${item.chapter.id}',
+            style: const TextStyle(fontSize: 18),
           ),
           const SizedBox(height: 8),
           Text(
             item.chapter.pali,
             style: const TextStyle(
-              fontSize: 28,
+              fontSize: 32,
               fontFamily: 'Castoro',
               fontStyle: FontStyle.italic,
               fontWeight: FontWeight.w500,
@@ -238,7 +252,7 @@ class _VerseScreenState extends State<VerseScreen> {
           const SizedBox(height: 8),
           Text(
             item.chapter.english,
-            style: const TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 22),
             textAlign: TextAlign.center,
           ),
         ],
@@ -250,6 +264,7 @@ class _VerseScreenState extends State<VerseScreen> {
 
   @override
   void dispose() {
+    _hideSliderTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -288,83 +303,104 @@ class _VerseScreenState extends State<VerseScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      PageView.builder(
-                        controller: _pageController,
-                        itemCount: _pages.length,
-                        itemBuilder: (context, index) =>
-                            _buildPage(_pages[index]),
-                      ),
-                      // Hot tap areas
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 60,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            final now = DateTime.now().millisecondsSinceEpoch;
-                            if (now - _lastLeftTapTime < 500) {
-                              _leftSkipCount++;
-                            } else {
-                              _leftSkipCount = 1;
-                            }
-                            _lastLeftTapTime = now;
-
-                            final targetPage = (_currentIndex - _leftSkipCount)
-                                .clamp(0, _pages.length - 1);
-                            _pageController.jumpToPage(targetPage);
-                            setState(() => _currentIndex = targetPage);
-                          },
+          : GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                _resetSliderFadeTimer(); // show slider on tap anywhere
+              },
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        PageView.builder(
+                          controller: _pageController,
+                          itemCount: _pages.length,
+                          itemBuilder: (context, index) =>
+                              _buildPage(_pages[index]),
                         ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 60,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            final now = DateTime.now().millisecondsSinceEpoch;
-                            if (now - _lastRightTapTime < 500) {
-                              _rightSkipCount++;
-                            } else {
-                              _rightSkipCount = 1;
-                            }
-                            _lastRightTapTime = now;
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: 60,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () {
+                              final now = DateTime.now().millisecondsSinceEpoch;
+                              if (now - _lastLeftTapTime < 500) {
+                                _leftSkipCount++;
+                              } else {
+                                _leftSkipCount = 1;
+                              }
+                              _lastLeftTapTime = now;
 
-                            final targetPage = (_currentIndex + _rightSkipCount)
-                                .clamp(0, _pages.length - 1);
-                            _pageController.jumpToPage(targetPage);
-                            setState(() => _currentIndex = targetPage);
-                          },
+                              final targetPage =
+                                  (_currentIndex - _leftSkipCount).clamp(
+                                    0,
+                                    _pages.length - 1,
+                                  );
+                              _pageController.jumpToPage(targetPage);
+                              setState(() => _currentIndex = targetPage);
+                              _resetSliderFadeTimer();
+                            },
+                          ),
                         ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: 60,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () {
+                              final now = DateTime.now().millisecondsSinceEpoch;
+                              if (now - _lastRightTapTime < 500) {
+                                _rightSkipCount++;
+                              } else {
+                                _rightSkipCount = 1;
+                              }
+                              _lastRightTapTime = now;
+
+                              final targetPage =
+                                  (_currentIndex + _rightSkipCount).clamp(
+                                    0,
+                                    _pages.length - 1,
+                                  );
+                              _pageController.jumpToPage(targetPage);
+                              setState(() => _currentIndex = targetPage);
+                              _resetSliderFadeTimer();
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 20,
+                      horizontal: 30,
+                    ),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 300),
+                      opacity: _sliderOpacity,
+                      child: Slider(
+                        min: 0,
+                        max: (_pages.length - 1).toDouble(),
+                        value: _currentIndex.toDouble(),
+                        label: currentVerse != null
+                            ? 'Verse ${currentVerse.id}'
+                            : '',
+                        onChanged: (value) {
+                          final newIndex = value.round();
+                          _pageController.jumpToPage(newIndex);
+                          _resetSliderFadeTimer(); // show slider on slider move
+                        },
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Slider(
-                    min: 0,
-                    max: (_pages.length - 1).toDouble(),
-                    value: _currentIndex.toDouble(),
-                    label: currentVerse != null
-                        ? 'Verse ${currentVerse.id}'
-                        : '',
-                    onChanged: (value) {
-                      final newIndex = value.round();
-                      _pageController.jumpToPage(newIndex);
-                    },
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
     );
   }
