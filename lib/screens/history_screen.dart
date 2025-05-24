@@ -22,9 +22,6 @@ class HistoryScreen extends StatelessWidget {
       return const Center(child: Text("No history yet."));
     }
 
-    // Sort and group contiguous verse IDs
-    rawVerseIds.sort();
-
     final List<List<int>> grouped = [];
     for (final id in rawVerseIds) {
       if (grouped.isEmpty || id != grouped.last.last + 1) {

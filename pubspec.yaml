@@ -28,6 +28,7 @@ flutter:
   assets:
     - assets/chapters.json
     - assets/verses.json
+    - assets/max_muller.json
 
   fonts:
     - family: Castoro

@@ -44,6 +44,7 @@ int _lastRightTapTime = 0;
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
   late List<PageItem> _pages;
+  Map<String, String> _maxMullerTranslations = {};
   int _currentIndex = 0;
   bool _isLoading = true;
 
@@ -55,7 +56,16 @@ class _VerseScreenState extends State<VerseScreen> {
 
   Future<void> _loadVerses() async {
     final jsonString = await rootBundle.loadString('assets/verses.json');
+    final maxMullerString = await rootBundle.loadString(
+      'assets/max_muller.json',
+    );
+
     final Map<String, dynamic> jsonData = json.decode(jsonString);
+    final Map<String, dynamic> mullerData = json.decode(maxMullerString);
+    _maxMullerTranslations = mullerData.map(
+      (key, value) => MapEntry(key, value.toString()),
+    );
+
     final allVerses = jsonData.entries
         .map((e) => Verse.fromJson(e.key, e.value))
         .toList();
@@ -123,51 +133,87 @@ class _VerseScreenState extends State<VerseScreen> {
 
   Widget _buildPage(PageItem item) {
     if (item is VersePage) {
+      final verse = item.verse;
+      final maxMullerText = _maxMullerTranslations[verse.id];
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
-        child: Text(
-          item.verse.text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 22,
-            fontFamily: 'Castoro',
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
-    } else if (item is ChapterDivider) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Text(
-                'Chapter ${item.chapter.id}',
-                style: const TextStyle(fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 8),
             Text(
-              item.chapter.pali,
+              verse.text,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 28,
+                fontSize: 22,
                 fontFamily: 'Castoro',
                 fontStyle: FontStyle.italic,
                 fontWeight: FontWeight.w500,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              item.chapter.english,
-              style: const TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
-            ),
+            if (maxMullerText != null) ...[
+              const SizedBox(height: 20),
+              const Divider(thickness: 1),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      maxMullerText,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Max Müller',
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
+      );
+    } else if (item is ChapterDivider) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Text(
+              'Chapter ${item.chapter.id}',
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.chapter.pali,
+            style: const TextStyle(
+              fontSize: 28,
+              fontFamily: 'Castoro',
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.chapter.english,
+            style: const TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+        ],
       );
     } else {
       return const SizedBox.shrink();
