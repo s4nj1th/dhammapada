@@ -22,11 +22,6 @@ class ChapterDivider extends PageItem {
   ChapterDivider(this.chapter);
 }
 
-int _leftSkipCount = 0;
-int _rightSkipCount = 0;
-int _lastLeftTapTime = 0;
-int _lastRightTapTime = 0;
-
 class VerseScreen extends StatefulWidget {
   final int initialVerseId;
   final int? initialChapterId;
@@ -45,13 +40,18 @@ class VerseScreen extends StatefulWidget {
 
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
-  late List<PageItem> _pages;
+  late List<PageItem> _pages = [];
   Map<String, Map<String, String>> _translationsByKey = {};
   int _currentIndex = 0;
   bool _isLoading = true;
 
-  double _sliderOpacity = 0.0; // Start hidden
+  double _sliderOpacity = 0.0;
   Timer? _hideSliderTimer;
+
+  int _leftSkipCount = 0;
+  int _rightSkipCount = 0;
+  int _lastLeftTapTime = 0;
+  int _lastRightTapTime = 0;
 
   @override
   void initState() {
@@ -61,49 +61,45 @@ class _VerseScreenState extends State<VerseScreen> {
 
   void _resetSliderFadeTimer() {
     _hideSliderTimer?.cancel();
-    setState(() => _sliderOpacity = 1.0); // show slider
+    setState(() => _sliderOpacity = 1.0);
 
     _hideSliderTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() => _sliderOpacity = 0.0); // hide slider after 3s
-      }
+      if (mounted) setState(() => _sliderOpacity = 0.0);
     });
   }
 
   Future<void> _loadVerses() async {
-    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final provider = context.read<TranslationsProvider>();
     final selectedTranslations = provider.selectedTranslations.toSet();
     final translationOrder = provider.translationOrder;
 
     final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
-    final allVerses = jsonData.entries
-        .map((e) => Verse.fromJson(e.key, e.value))
-        .toList();
 
-    allVerses.sort((a, b) {
-      if (a.chapter == b.chapter) {
-        return int.parse(a.id).compareTo(int.parse(b.id));
-      }
-      return a.chapter.compareTo(b.chapter);
-    });
+    final allVerses =
+        jsonData.entries.map((e) => Verse.fromJson(e.key, e.value)).toList()
+          ..sort((a, b) {
+            if (a.chapter == b.chapter) {
+              return int.parse(a.id).compareTo(int.parse(b.id));
+            }
+            return a.chapter.compareTo(b.chapter);
+          });
 
     final pages = <PageItem>[];
     int? lastChapter;
     for (final verse in allVerses) {
       if (verse.chapter != lastChapter) {
         final chapter = widget.chapterMap[verse.chapter];
-        if (chapter != null) {
-          pages.add(ChapterDivider(chapter));
-        }
+        if (chapter != null) pages.add(ChapterDivider(chapter));
         lastChapter = verse.chapter;
       }
       pages.add(VersePage(verse));
     }
 
-    final Map<String, Map<String, String>> translations = {};
+    final translations = <String, Map<String, String>>{};
     for (final key in translationOrder) {
       if (!selectedTranslations.contains(key)) continue;
+
       final data = await rootBundle.loadString('assets/$key.json');
       final Map<String, dynamic> map = json.decode(data);
       translations[key] = map.map((k, v) => MapEntry(k, v.toString()));
@@ -114,21 +110,7 @@ class _VerseScreenState extends State<VerseScreen> {
     setState(() {
       _pages = pages;
       _translationsByKey = translations;
-
-      _currentIndex = widget.initialChapterId != null
-          ? _pages.indexWhere(
-              (item) =>
-                  item is ChapterDivider &&
-                  item.chapter.id == widget.initialChapterId,
-            )
-          : _pages.indexWhere(
-              (item) =>
-                  item is VersePage &&
-                  int.parse(item.verse.id) == widget.initialVerseId,
-            );
-
-      if (_currentIndex == -1) _currentIndex = 0;
-
+      _currentIndex = _getInitialPageIndex();
       _pageController = PageController(initialPage: _currentIndex);
       _isLoading = false;
     });
@@ -142,75 +124,91 @@ class _VerseScreenState extends State<VerseScreen> {
       if (page != null && page != _currentIndex && mounted) {
         setState(() => _currentIndex = page);
         _recordIfVersePage(page);
-        _resetSliderFadeTimer(); // show slider on page change
+        _resetSliderFadeTimer();
       }
     });
   }
 
+  int _getInitialPageIndex() {
+    if (widget.initialChapterId != null) {
+      final idx = _pages.indexWhere(
+        (item) =>
+            item is ChapterDivider &&
+            item.chapter.id == widget.initialChapterId,
+      );
+      if (idx != -1) return idx;
+    }
+    final idx = _pages.indexWhere(
+      (item) =>
+          item is VersePage &&
+          int.parse(item.verse.id) == widget.initialVerseId,
+    );
+    return idx != -1 ? idx : 0;
+  }
+
   void _recordIfVersePage(int pageIndex) {
+    if (pageIndex < 0 || pageIndex >= _pages.length) return;
     final currentItem = _pages[pageIndex];
     if (currentItem is VersePage) {
-      Provider.of<VerseTrackerProvider>(
-        context,
-        listen: false,
-      ).recordVerseView(currentItem.verse.chapter, currentItem.verse.id);
+      context.read<VerseTrackerProvider>().recordVerseView(
+        currentItem.verse.chapter,
+        currentItem.verse.id,
+      );
     }
   }
 
   List<Widget> _buildTranslations(String verseId) {
-    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final provider = context.read<TranslationsProvider>();
     final selectedTranslations = provider.selectedTranslations.toSet();
     final translationOrder = provider.translationOrder;
+
     final widgets = <Widget>[];
 
     for (final key in translationOrder) {
       if (!selectedTranslations.contains(key)) continue;
-
       final text = _translationsByKey[key]?[verseId];
-      if (text != null) {
-        widgets.addAll([
-          const SizedBox(height: 20),
-          const Divider(thickness: 1),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  text,
-                  textAlign: TextAlign.left,
-                  style: const TextStyle(fontSize: 20),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _getTranslatorName(key),
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]);
-      }
-    }
+      if (text == null) continue;
 
+      widgets.addAll([
+        const SizedBox(height: 20),
+        const Divider(thickness: 1),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                text,
+                textAlign: TextAlign.left,
+                style: const TextStyle(fontSize: 20),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _getTranslatorName(key),
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ]);
+    }
     return widgets;
   }
 
   String _getTranslatorName(String key) {
-    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final provider = context.read<TranslationsProvider>();
     return provider.allTranslations[key] ?? key;
   }
 
   Widget _buildPage(PageItem item) {
     if (item is VersePage) {
       final verse = item.verse;
-
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
         child: Column(
@@ -231,16 +229,14 @@ class _VerseScreenState extends State<VerseScreen> {
         ),
       );
     } else if (item is ChapterDivider) {
+      final chapter = item.chapter;
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Chapter ${item.chapter.id}',
-            style: const TextStyle(fontSize: 18),
-          ),
+          Text('Chapter ${chapter.id}', style: const TextStyle(fontSize: 18)),
           const SizedBox(height: 8),
           Text(
-            item.chapter.pali,
+            chapter.pali,
             style: const TextStyle(
               fontSize: 32,
               fontFamily: 'Castoro',
@@ -251,15 +247,48 @@ class _VerseScreenState extends State<VerseScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            item.chapter.english,
+            chapter.english,
             style: const TextStyle(fontSize: 22),
             textAlign: TextAlign.center,
           ),
         ],
       );
-    } else {
-      return const SizedBox.shrink();
     }
+    return const SizedBox.shrink();
+  }
+
+  void _handleTapOnSide({required bool isLeft}) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (isLeft) {
+      if (now - _lastLeftTapTime < 500) {
+        _leftSkipCount++;
+      } else {
+        _leftSkipCount = 1;
+      }
+      _lastLeftTapTime = now;
+
+      final targetPage = (_currentIndex - _leftSkipCount).clamp(
+        0,
+        _pages.length - 1,
+      );
+      _pageController.jumpToPage(targetPage);
+      setState(() => _currentIndex = targetPage);
+    } else {
+      if (now - _lastRightTapTime < 500) {
+        _rightSkipCount++;
+      } else {
+        _rightSkipCount = 1;
+      }
+      _lastRightTapTime = now;
+
+      final targetPage = (_currentIndex + _rightSkipCount).clamp(
+        0,
+        _pages.length - 1,
+      );
+      _pageController.jumpToPage(targetPage);
+      setState(() => _currentIndex = targetPage);
+    }
+    _resetSliderFadeTimer();
   }
 
   @override
@@ -271,8 +300,8 @@ class _VerseScreenState extends State<VerseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final savedProvider = Provider.of<SavedVersesProvider>(context);
-    final currentItem = !_isLoading && _pages.isNotEmpty
+    final savedProvider = context.watch<SavedVersesProvider>();
+    final currentItem = (!_isLoading && _pages.isNotEmpty)
         ? _pages[_currentIndex]
         : null;
     final currentVerse = currentItem is VersePage ? currentItem.verse : null;
@@ -294,9 +323,7 @@ class _VerseScreenState extends State<VerseScreen> {
                         : Theme.of(context).colorScheme.outline,
                     size: 28,
                   ),
-                  onPressed: () {
-                    savedProvider.toggleSave(currentVerse);
-                  },
+                  onPressed: () => savedProvider.toggleSave(currentVerse),
                 ),
               ]
             : null,
@@ -305,9 +332,7 @@ class _VerseScreenState extends State<VerseScreen> {
           ? const Center(child: CircularProgressIndicator())
           : GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onTap: () {
-                _resetSliderFadeTimer(); // show slider on tap anywhere
-              },
+              onTap: _resetSliderFadeTimer,
               child: Column(
                 children: [
                   Expanded(
@@ -326,24 +351,7 @@ class _VerseScreenState extends State<VerseScreen> {
                           width: 60,
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              final now = DateTime.now().millisecondsSinceEpoch;
-                              if (now - _lastLeftTapTime < 500) {
-                                _leftSkipCount++;
-                              } else {
-                                _leftSkipCount = 1;
-                              }
-                              _lastLeftTapTime = now;
-
-                              final targetPage =
-                                  (_currentIndex - _leftSkipCount).clamp(
-                                    0,
-                                    _pages.length - 1,
-                                  );
-                              _pageController.jumpToPage(targetPage);
-                              setState(() => _currentIndex = targetPage);
-                              _resetSliderFadeTimer();
-                            },
+                            onTap: () => _handleTapOnSide(isLeft: true),
                           ),
                         ),
                         Positioned(
@@ -353,24 +361,7 @@ class _VerseScreenState extends State<VerseScreen> {
                           width: 60,
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              final now = DateTime.now().millisecondsSinceEpoch;
-                              if (now - _lastRightTapTime < 500) {
-                                _rightSkipCount++;
-                              } else {
-                                _rightSkipCount = 1;
-                              }
-                              _lastRightTapTime = now;
-
-                              final targetPage =
-                                  (_currentIndex + _rightSkipCount).clamp(
-                                    0,
-                                    _pages.length - 1,
-                                  );
-                              _pageController.jumpToPage(targetPage);
-                              setState(() => _currentIndex = targetPage);
-                              _resetSliderFadeTimer();
-                            },
+                            onTap: () => _handleTapOnSide(isLeft: false),
                           ),
                         ),
                       ],
@@ -394,7 +385,7 @@ class _VerseScreenState extends State<VerseScreen> {
                         onChanged: (value) {
                           final newIndex = value.round();
                           _pageController.jumpToPage(newIndex);
-                          _resetSliderFadeTimer(); // show slider on slider move
+                          _resetSliderFadeTimer();
                         },
                       ),
                     ),

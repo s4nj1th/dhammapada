@@ -20,25 +20,32 @@ class SavedVersesScreen extends StatelessWidget {
               itemCount: savedVerses.length,
               itemBuilder: (context, index) {
                 final verse = savedVerses[index];
+                final verseId = int.tryParse(verse.id) ?? 0;
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 8,
                   ),
-                  child: ListTile(
-                    title: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${verse.id}.',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.outline,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    child: ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Verse $verseId',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '\n${verse.text}\n',
+                          const SizedBox(height: 8),
+                          Text(
+                            verse.text,
                             style: const TextStyle(
                               fontFamily: 'Castoro',
                               fontWeight: FontWeight.w500,
@@ -47,20 +54,20 @@ class SavedVersesScreen extends StatelessWidget {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => VerseScreen(
-                            initialVerseId: int.parse(verse.id),
-                            chapterMap: chapterMap,
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => VerseScreen(
+                              initialVerseId: verseId,
+                              chapterMap: chapterMap,
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 );
               },

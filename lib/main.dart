@@ -31,14 +31,16 @@ class MyApp extends StatelessWidget {
   ThemeData _themeFromScheme(ColorScheme scheme, {bool isAmoled = false}) {
     final isDark = scheme.brightness == Brightness.dark;
 
+    final scaffoldColor = isAmoled
+        ? Colors.black
+        : isDark
+        ? const Color(0xFF121212)
+        : null;
+
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
-      scaffoldBackgroundColor: isAmoled
-          ? Colors.black
-          : isDark
-          ? const Color(0xFF121212)
-          : null,
+      scaffoldBackgroundColor: scaffoldColor,
       canvasColor: isAmoled ? Colors.black : null,
       cardColor: isAmoled ? const Color(0xFF1A1A1A) : null,
       appBarTheme: AppBarTheme(
@@ -54,10 +56,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final themeNotifier = context.watch<ThemeNotifier>();
 
     return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+      builder: (lightDynamic, darkDynamic) {
         final lightScheme =
             lightDynamic ??
             ColorScheme.fromSeed(
@@ -72,18 +74,20 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
             );
 
+        final darkTheme = themeNotifier.isAmoled
+            ? _themeFromScheme(darkScheme, isAmoled: true)
+            : _themeFromScheme(darkScheme);
+
         return MaterialApp(
           title: 'Dhammapada',
           debugShowCheckedModeBanner: false,
           themeMode: themeNotifier.themeMode,
           theme: _themeFromScheme(lightScheme),
-          darkTheme: themeNotifier.isAmoled
-              ? _themeFromScheme(darkScheme, isAmoled: true)
-              : _themeFromScheme(darkScheme),
+          darkTheme: darkTheme,
           initialRoute: '/',
           routes: {
-            '/': (context) => const HomeScreen(),
-            '/settings': (context) => const SettingsScreen(),
+            '/': (_) => const HomeScreen(),
+            '/settings': (_) => const SettingsScreen(),
           },
         );
       },

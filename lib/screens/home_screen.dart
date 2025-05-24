@@ -9,6 +9,13 @@ import 'history_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/verse_tracker_provider.dart';
 
+class VersesAndChapters {
+  final List<Verse> verses;
+  final Map<int, Chapter> chapters;
+
+  VersesAndChapters(this.verses, this.chapters);
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -17,8 +24,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<List<Verse>> _futureVerses;
-  late Future<Map<int, Chapter>> _futureChapters;
+  late Future<VersesAndChapters> _futureVersesAndChapters;
   final PageController _pageController = PageController();
 
   int _selectedIndex = 0;
@@ -28,8 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _futureVerses = _loadVerses();
-    _futureChapters = _loadChapters();
+    _futureVersesAndChapters = Future.wait([_loadVerses(), _loadChapters()])
+        .then(
+          (results) => VersesAndChapters(
+            results[0] as List<Verse>,
+            results[1] as Map<int, Chapter>,
+          ),
+        );
   }
 
   Future<List<Verse>> _loadVerses() async {
@@ -108,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 12),
-
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -133,10 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Chapter')),
-
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -154,9 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 8),
-
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
@@ -178,10 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Verse')),
-
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -193,9 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 8),
-
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
@@ -303,21 +304,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Verse>>(
-      future: _futureVerses,
-      builder: (context, verseSnap) {
-        if (!verseSnap.hasData) {
+    return FutureBuilder<VersesAndChapters>(
+      future: _futureVersesAndChapters,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        return FutureBuilder<Map<int, Chapter>>(
-          future: _futureChapters,
-          builder: (context, chapterSnap) {
-            if (!chapterSnap.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return _buildScaffold(verseSnap.data!, chapterSnap.data!);
-          },
-        );
+        final verses = snapshot.data!.verses;
+        final chapters = snapshot.data!.chapters;
+        return _buildScaffold(verses, chapters);
       },
     );
   }
