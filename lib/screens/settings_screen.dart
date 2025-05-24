@@ -42,18 +42,6 @@ class SettingsScreen extends StatelessWidget {
             ),
 
           ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('About'),
-            onTap: () {
-              showAboutDialog(
-                context: context,
-                applicationName: 'Dhammapada',
-                applicationVersion: '1.0.0',
-              );
-            },
-          ),
-          const Divider(),
-          ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text(
               'Clear History',
@@ -79,12 +67,25 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               );
-              if (confirm == true) {
+
+              if (context.mounted && confirm == true) {
                 verseTracker.resetSessionHistory();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('History cleared')),
                 );
               }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About'),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'Dhammapada',
+                applicationVersion: '1.0.0',
+              );
             },
           ),
         ],

@@ -49,106 +49,179 @@ class _HomeScreenState extends State<HomeScreen> {
     final lastViewed = tracker.getLastViewed();
     final chapterIds = chapterMap.keys.toList()..sort();
 
-    return Center(
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        children: [
-          const SizedBox(height: 40),
-          ElevatedButton.icon(
-            icon: Icon(lastViewed == null ? Icons.auto_awesome : Icons.history),
-            label: Text(
-              lastViewed == null ? 'Start anew' : 'Continue where you left off',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Center(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 40),
+
+            // Start Anew / Continue
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: ElevatedButton.icon(
+                  icon: Icon(
+                    lastViewed == null ? Icons.auto_awesome : Icons.history,
+                  ),
+                  label: Text(
+                    lastViewed == null
+                        ? 'Start anew'
+                        : 'Continue where you left',
+                  ),
+                  onPressed: () {
+                    if (lastViewed != null && lastViewed.verseId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VerseScreen(
+                            chapterMap: chapterMap,
+                            initialVerseId: int.parse(lastViewed.verseId!),
+                          ),
+                        ),
+                      );
+                    } else if (lastViewed != null &&
+                        lastViewed.verseId == null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VerseScreen(
+                            initialChapterId: lastViewed.chapterId,
+                            chapterMap: chapterMap,
+                            initialVerseId: 1,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => VerseScreen(
+                            initialChapterId: 1,
+                            chapterMap: chapterMap,
+                            initialVerseId: 1,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
             ),
-            onPressed: () {
-              if (lastViewed != null && lastViewed.verseId != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => VerseScreen(
-                      chapterMap: chapterMap,
-                      initialVerseId: int.parse(lastViewed.verseId!),
-                    ),
-                  ),
-                );
-              } else if (lastViewed != null && lastViewed.verseId == null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => VerseScreen(
-                      initialChapterId: lastViewed.chapterId,
-                      chapterMap: chapterMap,
-                      initialVerseId: 1,
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => VerseScreen(
-                      initialChapterId: 1,
-                      chapterMap: chapterMap,
-                      initialVerseId: 1,
-                    ),
-                  ),
-                );
-              }
-            },
-          ),
-          const SizedBox(height: 40),
-          const Center(child: Text('Jump to Chapter')),
-          DropdownButton<int>(
-            value: _selectedChapterId,
-            isExpanded: true,
-            onChanged: (val) => setState(() => _selectedChapterId = val!),
-            items: chapterIds.map((id) {
-              final chapter = chapterMap[id]!;
-              return DropdownMenuItem(
-                value: id,
-                child: Text('$id. ${chapter.english}'),
-              );
-            }).toList(),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => VerseScreen(
-                    chapterMap: chapterMap,
-                    initialChapterId: _selectedChapterId,
-                    initialVerseId: 1,
-                  ),
+
+            const SizedBox(height: 12),
+
+            // Random Button
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.shuffle),
+                  label: const Text('Random Verse'),
+                  onPressed: () {
+                    final random = (verses.toList()..shuffle()).first;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VerseScreen(
+                          chapterMap: chapterMap,
+                          initialVerseId: int.parse(random.id),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-            child: const Text('Go to Chapter'),
-          ),
-          const SizedBox(height: 40),
-          const Center(child: Text('Jump to Verse')),
-          TextField(
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(labelText: 'Verse Number'),
-            keyboardType: TextInputType.number,
-            onChanged: (val) => _verseInput = val,
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final targetVerse = int.tryParse(_verseInput) ?? 0;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => VerseScreen(
-                    chapterMap: chapterMap,
-                    initialVerseId: targetVerse,
-                  ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+            const Center(child: Text('Jump to Chapter')),
+
+            // Smaller Dropdown
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: DropdownButton<int>(
+                  value: _selectedChapterId,
+                  isExpanded: true,
+                  onChanged: (val) => setState(() => _selectedChapterId = val!),
+                  items: chapterIds.map((id) {
+                    final chapter = chapterMap[id]!;
+                    return DropdownMenuItem(
+                      value: id,
+                      child: Text('$id. ${chapter.english}'),
+                    );
+                  }).toList(),
                 ),
-              );
-            },
-            child: const Text('Go to Verse'),
-          ),
-        ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Go to Chapter Button
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VerseScreen(
+                          chapterMap: chapterMap,
+                          initialChapterId: _selectedChapterId,
+                          initialVerseId: 1,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Chapter'),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+            const Center(child: Text('Jump to Verse')),
+
+            // Smaller Verse Input
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: TextField(
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(labelText: 'Verse Number'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) => _verseInput = val,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Go to Verse Button
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: ElevatedButton(
+                  onPressed: () {
+                    final targetVerse = int.tryParse(_verseInput) ?? 0;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VerseScreen(
+                          chapterMap: chapterMap,
+                          initialVerseId: targetVerse,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Verse'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -12,33 +12,25 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawHistory = Provider.of<VerseTrackerProvider>(context).viewHistory
-        .expand(
-          (entry) => entry.verseIds.map(
-            (id) => _VerseView(entry.chapterId, int.tryParse(id)),
-          ),
-        )
-        .where((v) => v.verseId != null)
+    final rawVerseIds = Provider.of<VerseTrackerProvider>(context).viewHistory
+        .expand((entry) => entry.verseIds)
+        .map((id) => int.tryParse(id))
+        .whereType<int>()
         .toList();
 
-    if (rawHistory.isEmpty) {
+    if (rawVerseIds.isEmpty) {
       return const Center(child: Text("No history yet."));
     }
 
-    // Sort and group contiguous verses
-    rawHistory.sort((a, b) {
-      int cmp = a.chapterId.compareTo(b.chapterId);
-      return cmp != 0 ? cmp : a.verseId!.compareTo(b.verseId!);
-    });
+    // Sort and group contiguous verse IDs
+    rawVerseIds.sort();
 
-    final List<_GroupedEntry> grouped = [];
-    for (final view in rawHistory) {
-      if (grouped.isEmpty ||
-          grouped.last.chapterId != view.chapterId ||
-          view.verseId! != grouped.last.verseIds.last + 1) {
-        grouped.add(_GroupedEntry(view.chapterId, [view.verseId!]));
+    final List<List<int>> grouped = [];
+    for (final id in rawVerseIds) {
+      if (grouped.isEmpty || id != grouped.last.last + 1) {
+        grouped.add([id]);
       } else {
-        grouped.last.verseIds.add(view.verseId!);
+        grouped.last.add(id);
       }
     }
 
@@ -48,8 +40,8 @@ class HistoryScreen extends StatelessWidget {
       itemCount: reversedGrouped.length,
       itemBuilder: (context, index) {
         final group = reversedGrouped[index];
-        final start = group.verseIds.first;
-        final end = group.verseIds.last;
+        final start = group.first;
+        final end = group.last;
         final subtitle = start == end
             ? 'Verse: $start'
             : 'Verses: $start to $end';
@@ -60,17 +52,13 @@ class HistoryScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListTile(
-            title: Text('Chapter ${group.chapterId}'),
-            subtitle: Text(subtitle),
+            title: Text(subtitle),
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => VerseScreen(
-                    chapterMap: chapterMap,
-                    // initialChapterId: group.chapterId,
-                    initialVerseId: end,
-                  ),
+                  builder: (_) =>
+                      VerseScreen(chapterMap: chapterMap, initialVerseId: end),
                 ),
               );
             },
@@ -79,18 +67,4 @@ class HistoryScreen extends StatelessWidget {
       },
     );
   }
-}
-
-class _VerseView {
-  final int chapterId;
-  final int? verseId;
-
-  _VerseView(this.chapterId, this.verseId);
-}
-
-class _GroupedEntry {
-  final int chapterId;
-  final List<int> verseIds;
-
-  _GroupedEntry(this.chapterId, this.verseIds);
 }
