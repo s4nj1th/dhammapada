@@ -34,7 +34,6 @@ class VerseTrackerProvider with ChangeNotifier {
   }
 
   void recordVerseView(int chapterId, String verseId) {
-    // Simply add a new entry each time, no grouping
     _viewHistory.add(HistoryEntry(chapterId, [verseId]));
     _saveHistory();
     notifyListeners();

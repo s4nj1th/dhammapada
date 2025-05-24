@@ -1,3 +1,4 @@
+import 'package:dhammapada/providers/translations_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
@@ -13,6 +14,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
         ChangeNotifierProvider(create: (_) => SavedVersesProvider()),
         ChangeNotifierProvider(create: (_) => VerseTrackerProvider()),
+        ChangeNotifierProvider(create: (_) => TranslationsProvider()),
       ],
       child: const MyApp(),
     ),

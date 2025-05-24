@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme_notifier.dart';
 import '../providers/verse_tracker_provider.dart';
+import '../providers/translations_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,24 +24,42 @@ class SettingsScreen extends StatelessWidget {
           SwitchListTile(
             title: const Text('Dark Mode'),
             value: isDark,
-            onChanged: (value) {
-              themeNotifier.toggleTheme(value);
+            onChanged: themeNotifier.toggleTheme,
+          ),
+          SwitchListTile(
+            title: const Text('AMOLED Mode'),
+            value: themeNotifier.isAmoled,
+            onChanged: isDark ? themeNotifier.toggleAmoled : null,
+          ),
+
+          const Divider(height: 32),
+          const Text('Translations', style: TextStyle(fontSize: 18)),
+          Consumer<TranslationsProvider>(
+            builder: (context, provider, _) {
+              final all = provider.allTranslations;
+              final order = provider.translationOrder;
+              final selected = provider.selectedTranslations;
+
+              return ReorderableListView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                onReorder: provider.reorderTranslations,
+                children: order.map((code) {
+                  final isSelected = selected.contains(code);
+                  return CheckboxListTile(
+                    key: ValueKey(code),
+                    value: isSelected,
+                    title: Text(all[code]!),
+                    onChanged: (val) => provider.toggleTranslation(code, val!),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    secondary: const Icon(Icons.drag_handle),
+                  );
+                }).toList(),
+              );
             },
           ),
-          if (isDark)
-            SwitchListTile(
-              title: const Text('AMOLED Mode'),
-              value: themeNotifier.isAmoled,
-              onChanged: (value) => themeNotifier.toggleAmoled(value),
-            )
-          else
-            SwitchListTile(
-              title: const Text('AMOLED Mode'),
-              value: themeNotifier.isAmoled,
-              enableFeedback: false,
-              onChanged: null,
-            ),
 
+          const Divider(height: 32),
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text(
@@ -76,6 +95,7 @@ class SettingsScreen extends StatelessWidget {
               }
             },
           ),
+
           const Divider(),
           ListTile(
             leading: const Icon(Icons.info),

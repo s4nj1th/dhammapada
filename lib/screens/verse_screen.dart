@@ -7,6 +7,7 @@ import '../models/verses.dart';
 import '../models/chapters.dart';
 import '../providers/saved_verses_provider.dart';
 import '../providers/verse_tracker_provider.dart';
+import '../providers/translations_provider.dart';
 
 abstract class PageItem {}
 
@@ -36,15 +37,10 @@ class VerseScreen extends StatefulWidget {
   State<VerseScreen> createState() => _VerseScreenState();
 }
 
-int _leftSkipCount = 0;
-int _rightSkipCount = 0;
-int _lastLeftTapTime = 0;
-int _lastRightTapTime = 0;
-
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
   late List<PageItem> _pages;
-  Map<String, String> _maxMullerTranslations = {};
+  Map<String, Map<String, String>> _translationsByKey = {};
   int _currentIndex = 0;
   bool _isLoading = true;
 
@@ -55,17 +51,11 @@ class _VerseScreenState extends State<VerseScreen> {
   }
 
   Future<void> _loadVerses() async {
+    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final selectedTranslations = provider.selectedTranslations;
+
     final jsonString = await rootBundle.loadString('assets/verses.json');
-    final maxMullerString = await rootBundle.loadString(
-      'assets/max_muller.json',
-    );
-
     final Map<String, dynamic> jsonData = json.decode(jsonString);
-    final Map<String, dynamic> mullerData = json.decode(maxMullerString);
-    _maxMullerTranslations = mullerData.map(
-      (key, value) => MapEntry(key, value.toString()),
-    );
-
     final allVerses = jsonData.entries
         .map((e) => Verse.fromJson(e.key, e.value))
         .toList();
@@ -77,34 +67,49 @@ class _VerseScreenState extends State<VerseScreen> {
       return a.chapter.compareTo(b.chapter);
     });
 
-    _pages = [];
+    final pages = <PageItem>[];
     int? lastChapter;
     for (final verse in allVerses) {
       if (verse.chapter != lastChapter) {
         final chapter = widget.chapterMap[verse.chapter];
         if (chapter != null) {
-          _pages.add(ChapterDivider(chapter));
+          pages.add(ChapterDivider(chapter));
         }
         lastChapter = verse.chapter;
       }
-      _pages.add(VersePage(verse));
+      pages.add(VersePage(verse));
     }
 
-    _currentIndex = widget.initialChapterId != null
-        ? _pages.indexWhere(
-            (item) =>
-                item is ChapterDivider &&
-                item.chapter.id == widget.initialChapterId,
-          )
-        : _pages.indexWhere(
-            (item) =>
-                item is VersePage &&
-                int.parse(item.verse.id) == widget.initialVerseId,
-          );
+    final Map<String, Map<String, String>> translations = {};
+    for (final key in selectedTranslations) {
+      final data = await rootBundle.loadString('assets/$key.json');
+      final Map<String, dynamic> map = json.decode(data);
+      translations[key] = map.map((k, v) => MapEntry(k, v.toString()));
+    }
 
-    if (_currentIndex == -1) _currentIndex = 0;
+    if (!mounted) return;
 
-    _pageController = PageController(initialPage: _currentIndex);
+    setState(() {
+      _pages = pages;
+      _translationsByKey = translations;
+
+      _currentIndex = widget.initialChapterId != null
+          ? _pages.indexWhere(
+              (item) =>
+                  item is ChapterDivider &&
+                  item.chapter.id == widget.initialChapterId,
+            )
+          : _pages.indexWhere(
+              (item) =>
+                  item is VersePage &&
+                  int.parse(item.verse.id) == widget.initialVerseId,
+            );
+
+      if (_currentIndex == -1) _currentIndex = 0;
+
+      _pageController = PageController(initialPage: _currentIndex);
+      _isLoading = false;
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _recordIfVersePage(_currentIndex);
@@ -112,13 +117,11 @@ class _VerseScreenState extends State<VerseScreen> {
 
     _pageController.addListener(() {
       final page = _pageController.page?.round();
-      if (page != null && page != _currentIndex) {
+      if (page != null && page != _currentIndex && mounted) {
         setState(() => _currentIndex = page);
         _recordIfVersePage(page);
       }
     });
-
-    setState(() => _isLoading = false);
   }
 
   void _recordIfVersePage(int pageIndex) {
@@ -131,10 +134,58 @@ class _VerseScreenState extends State<VerseScreen> {
     }
   }
 
+  List<Widget> _buildTranslations(String verseId) {
+    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    final widgets = <Widget>[];
+
+    for (final key in provider.selectedTranslations) {
+      final text = _translationsByKey[key]?[verseId];
+      if (text != null) {
+        widgets.addAll([
+          const SizedBox(height: 20),
+          const Divider(thickness: 1),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  text,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(fontSize: 20),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _getTranslatorName(key),
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]);
+      }
+    }
+
+    return widgets;
+  }
+
+  String _getTranslatorName(String key) {
+    final provider = Provider.of<TranslationsProvider>(context, listen: false);
+    return provider.allTranslations[key] ?? key;
+  }
+
   Widget _buildPage(PageItem item) {
     if (item is VersePage) {
       final verse = item.verse;
-      final maxMullerText = _maxMullerTranslations[verse.id];
 
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
@@ -151,37 +202,7 @@ class _VerseScreenState extends State<VerseScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            if (maxMullerText != null) ...[
-              const SizedBox(height: 20),
-              const Divider(thickness: 1),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      maxMullerText,
-                      textAlign: TextAlign.left,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Max Müller',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ..._buildTranslations(verse.id),
           ],
         ),
       );
@@ -232,7 +253,6 @@ class _VerseScreenState extends State<VerseScreen> {
     final currentItem = !_isLoading && _pages.isNotEmpty
         ? _pages[_currentIndex]
         : null;
-
     final currentVerse = currentItem is VersePage ? currentItem.verse : null;
     final isSaved = currentVerse != null && savedProvider.isSaved(currentVerse);
 
@@ -264,65 +284,10 @@ class _VerseScreenState extends State<VerseScreen> {
           : Column(
               children: [
                 Expanded(
-                  child: Stack(
-                    children: [
-                      PageView.builder(
-                        controller: _pageController,
-                        itemCount: _pages.length,
-                        itemBuilder: (context, index) =>
-                            _buildPage(_pages[index]),
-                      ),
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 60,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            final now = DateTime.now().millisecondsSinceEpoch;
-                            if (now - _lastLeftTapTime < 500) {
-                              _leftSkipCount++;
-                            } else {
-                              _leftSkipCount = 1;
-                            }
-                            _lastLeftTapTime = now;
-
-                            final targetPage = (_currentIndex - _leftSkipCount)
-                                .clamp(0, _pages.length - 1);
-                            _pageController.jumpToPage(targetPage);
-                            setState(() {
-                              _currentIndex = targetPage;
-                            });
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        width: 60,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            final now = DateTime.now().millisecondsSinceEpoch;
-                            if (now - _lastRightTapTime < 500) {
-                              _rightSkipCount++;
-                            } else {
-                              _rightSkipCount = 1;
-                            }
-                            _lastRightTapTime = now;
-
-                            final targetPage = (_currentIndex + _rightSkipCount)
-                                .clamp(0, _pages.length - 1);
-                            _pageController.jumpToPage(targetPage);
-                            setState(() {
-                              _currentIndex = targetPage;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _pages.length,
+                    itemBuilder: (context, index) => _buildPage(_pages[index]),
                   ),
                 ),
                 Padding(

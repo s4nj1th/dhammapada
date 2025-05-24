@@ -111,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            // Random Button
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -138,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Chapter')),
 
-            // Dropdown
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -159,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 8),
 
-            // Go to Chapter Button
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
@@ -185,7 +182,6 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Verse')),
 
-            // Verse Input
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -200,7 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 8),
 
-            // Go to Verse Button
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
