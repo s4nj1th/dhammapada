@@ -56,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
           shrinkWrap: true,
           children: [
             const SizedBox(height: 40),
-
-            // Start Anew / Continue
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -70,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? 'Start anew'
                         : 'Continue where you left',
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (lastViewed != null && lastViewed.verseId != null) {
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => VerseScreen(
@@ -83,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     } else if (lastViewed != null &&
                         lastViewed.verseId == null) {
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => VerseScreen(
@@ -94,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     } else {
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => VerseScreen(
@@ -105,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     }
+                    setState(() {});
                   },
                 ),
               ),
@@ -119,9 +118,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.shuffle),
                   label: const Text('Random Verse'),
-                  onPressed: () {
+                  onPressed: () async {
                     final random = (verses.toList()..shuffle()).first;
-                    Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => VerseScreen(
@@ -130,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     );
+                    setState(() {});
                   },
                 ),
               ),
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Chapter')),
 
-            // Smaller Dropdown
+            // Dropdown
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -164,8 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => VerseScreen(
@@ -175,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     );
+                    setState(() {});
                   },
                   child: const Text('Go to Chapter'),
                 ),
@@ -184,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Verse')),
 
-            // Smaller Verse Input
+            // Verse Input
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -204,9 +205,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 200),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final targetVerse = int.tryParse(_verseInput) ?? 0;
-                    Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => VerseScreen(
@@ -215,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     );
+                    setState(() {});
                   },
                   child: const Text('Go to Verse'),
                 ),
