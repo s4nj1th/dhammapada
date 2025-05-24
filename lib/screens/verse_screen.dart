@@ -1,3 +1,4 @@
+// Same imports...
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,12 @@ class ChapterDivider extends PageItem {
   final Chapter chapter;
   ChapterDivider(this.chapter);
 }
+
+// Skip counter globals
+int _leftSkipCount = 0;
+int _rightSkipCount = 0;
+int _lastLeftTapTime = 0;
+int _lastRightTapTime = 0;
 
 class VerseScreen extends StatefulWidget {
   final int initialVerseId;
@@ -284,10 +291,62 @@ class _VerseScreenState extends State<VerseScreen> {
           : Column(
               children: [
                 Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _pages.length,
-                    itemBuilder: (context, index) => _buildPage(_pages[index]),
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        itemCount: _pages.length,
+                        itemBuilder: (context, index) =>
+                            _buildPage(_pages[index]),
+                      ),
+                      // Hot tap areas
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 60,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            final now = DateTime.now().millisecondsSinceEpoch;
+                            if (now - _lastLeftTapTime < 500) {
+                              _leftSkipCount++;
+                            } else {
+                              _leftSkipCount = 1;
+                            }
+                            _lastLeftTapTime = now;
+
+                            final targetPage = (_currentIndex - _leftSkipCount)
+                                .clamp(0, _pages.length - 1);
+                            _pageController.jumpToPage(targetPage);
+                            setState(() => _currentIndex = targetPage);
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 60,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            final now = DateTime.now().millisecondsSinceEpoch;
+                            if (now - _lastRightTapTime < 500) {
+                              _rightSkipCount++;
+                            } else {
+                              _rightSkipCount = 1;
+                            }
+                            _lastRightTapTime = now;
+
+                            final targetPage = (_currentIndex + _rightSkipCount)
+                                .clamp(0, _pages.length - 1);
+                            _pageController.jumpToPage(targetPage);
+                            setState(() => _currentIndex = targetPage);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Padding(
