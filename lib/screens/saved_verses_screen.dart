@@ -9,6 +9,11 @@ class SavedVersesScreen extends StatelessWidget {
 
   const SavedVersesScreen({super.key, required this.chapterMap});
 
+  int _calculateCrossAxisCount(double width) {
+    // If width > 600, use 2 columns, else 1
+    return width > 600 ? 2 : 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     final savedVerses = context.watch<SavedVersesProvider>().savedVerses;
@@ -16,53 +21,90 @@ class SavedVersesScreen extends StatelessWidget {
     return Scaffold(
       body: savedVerses.isEmpty
           ? const Center(child: Text('No saved verses.'))
-          : ListView.builder(
-              itemCount: savedVerses.length,
-              itemBuilder: (context, index) {
-                final verse = savedVerses[index];
-                final verseId = int.tryParse(verse.id) ?? 0;
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final crossAxisCount = _calculateCrossAxisCount(
+                  constraints.maxWidth,
+                );
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      // Limit the max width so 2 columns don't stretch too wide
+                      maxWidth: crossAxisCount == 2 ? 800 : double.infinity,
                     ),
-                    child: ListTile(
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Verse $verseId',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.outline,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            verse.text,
-                            style: const TextStyle(
-                              fontFamily: 'Castoro',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 20,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 8,
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => VerseScreen(
-                              initialVerseId: verseId,
-                              chapterMap: chapterMap,
+                      itemCount: savedVerses.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 3, // wide cards, adjust as needed
+                      ),
+                      itemBuilder: (context, index) {
+                        final verse = savedVerses[index];
+                        final verseId = int.tryParse(verse.id) ?? 0;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => VerseScreen(
+                                  initialVerseId: verseId,
+                                  chapterMap: chapterMap,
+                                ),
+                              ),
+                            );
+                          },
+                          child: SizedBox(
+                            height:
+                                200, // fixed height for the card so grid knows how tall it is
+                            child: Card(
+                              margin: EdgeInsets.zero,
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Verse $verseId',
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.outline,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          verse.text,
+                                          style: const TextStyle(
+                                            fontFamily: 'Castoro',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 18,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         );
