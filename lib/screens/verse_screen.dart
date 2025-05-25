@@ -250,42 +250,29 @@ class _VerseScreenState extends State<VerseScreen> {
       );
     } else if (item is ChapterDivider) {
       final chapter = item.chapter;
-      return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: IntrinsicHeight(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Chapter ${chapter.id}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    chapter.pali,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontFamily: 'Castoro',
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    chapter.english,
-                    style: const TextStyle(fontSize: 22),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Chapter ${chapter.id}', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            Text(
+              chapter.pali,
+              style: const TextStyle(
+                fontSize: 32,
+                fontFamily: 'Castoro',
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              chapter.english,
+              style: const TextStyle(fontSize: 22),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }

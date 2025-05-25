@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
       cardColor: isAmoled ? const Color(0xFF1A1A1A) : null,
       appBarTheme: AppBarTheme(
         backgroundColor: isAmoled ? Colors.black : scheme.surface,
+        actionsPadding: EdgeInsets.symmetric(horizontal: 10),
         titleTextStyle: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 24,

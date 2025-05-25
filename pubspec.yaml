@@ -32,6 +32,7 @@ flutter:
     - assets/translations/max_muller.json
     - assets/translations/woodwards.json
     - assets/translations/thannisaro.json
+    - assets/icon.png
 
   fonts:
     - family: Castoro

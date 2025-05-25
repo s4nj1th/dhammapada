@@ -17,11 +17,9 @@ class SettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Theme toggles
           SwitchListTile(
             title: const Text('Dark Mode'),
             value: isDark,
@@ -35,7 +33,6 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(height: 32),
 
-          // Translations selection + reorder
           const Text('Translations', style: TextStyle(fontSize: 18)),
           Consumer<TranslationsProvider>(
             builder: (context, provider, _) {
@@ -64,7 +61,6 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(height: 32),
 
-          // Clear History action
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
             title: const Text(
@@ -106,7 +102,6 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(),
 
-          // About section
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About'),
