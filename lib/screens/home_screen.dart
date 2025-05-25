@@ -244,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
                         },
-                        child: const Text('Go to Chapter'),
+                        child: const Text('Read Chapter'),
                       ),
                     ],
                   ),
@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
                         },
-                        child: const Text('Go to Verse'),
+                        child: const Text('Read Verse'),
                       ),
                     ],
                   ),
