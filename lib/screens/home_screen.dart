@@ -98,6 +98,19 @@ class _HomeScreenState extends State<HomeScreen>
                 setState(() {});
               });
             },
+            onDoubleTap: () async {
+              final random = (verses.toList()..shuffle()).first;
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VerseScreen(
+                    chapterMap: chapterMap,
+                    initialVerseId: int.parse(random.id),
+                  ),
+                ),
+              );
+              setState(() {});
+            },
             child: AnimatedBuilder(
               animation: _floatingAnimation,
               builder: (context, child) {
@@ -115,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 30),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 240),
             child: ElevatedButton.icon(
@@ -162,27 +175,6 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   );
                 }
-                setState(() {});
-              },
-            ),
-          ),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 240),
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.shuffle),
-              label: const Text('Random Verse', textAlign: TextAlign.center),
-              onPressed: () async {
-                final random = (verses.toList()..shuffle()).first;
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => VerseScreen(
-                      chapterMap: chapterMap,
-                      initialVerseId: int.parse(random.id),
-                    ),
-                  ),
-                );
                 setState(() {});
               },
             ),
