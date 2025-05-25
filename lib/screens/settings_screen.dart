@@ -66,10 +66,10 @@ class SettingsScreen extends StatelessWidget {
 
           // Clear History action
           ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
             title: const Text(
               'Clear History',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: Colors.redAccent),
             ),
             onTap: () async {
               final confirm = await showDialog<bool>(
@@ -86,7 +86,10 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Clear'),
+                      child: const Text(
+                        'Clear',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
                     ),
                   ],
                 ),

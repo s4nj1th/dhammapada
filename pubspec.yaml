@@ -15,7 +15,6 @@ dependencies:
   provider: ^6.1.0
   shared_preferences: ^2.0.15
   dynamic_color: ^1.7.0
-  fuzzy: ^0.5.1
 
 
 dev_dependencies:
@@ -30,8 +29,9 @@ flutter:
   assets:
     - assets/chapters.json
     - assets/verses.json
-    - assets/max_muller.json
-    - assets/woodwards.json
+    - assets/translations/max_muller.json
+    - assets/translations/woodwards.json
+    - assets/translations/thannisaro.json
 
   fonts:
     - family: Castoro

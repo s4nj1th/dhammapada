@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            const SizedBox(height: 40),
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 240),
@@ -119,29 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 240),
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.shuffle),
-                  label: const Text('Random Verse'),
-                  onPressed: () async {
-                    final random = (verses.toList()..shuffle()).first;
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VerseScreen(
-                          chapterMap: chapterMap,
-                          initialVerseId: int.parse(random.id),
-                        ),
-                      ),
-                    );
-                    setState(() {});
-                  },
-                ),
-              ),
-            ),
             const SizedBox(height: 40),
             const Center(child: Text('Jump to Chapter')),
             Center(
@@ -151,11 +127,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   value: _selectedChapterId,
                   isExpanded: true,
                   onChanged: (val) => setState(() => _selectedChapterId = val!),
+                  selectedItemBuilder: (context) => chapterIds.map((id) {
+                    final chapter = chapterMap[id]!;
+                    return Center(
+                      child: Text(
+                        '$id. ${chapter.english}',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }).toList(),
                   items: chapterIds.map((id) {
                     final chapter = chapterMap[id]!;
                     return DropdownMenuItem(
                       value: id,
-                      child: Text('$id. ${chapter.english}'),
+                      child: Text(
+                        '$id. ${chapter.english}',
+                        textAlign: TextAlign.center,
+                      ),
                     );
                   }).toList(),
                 ),
@@ -215,6 +203,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     setState(() {});
                   },
                   child: const Text('Go to Verse'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.shuffle),
+                  label: const Text('Random Verse'),
+                  onPressed: () async {
+                    final random = (verses.toList()..shuffle()).first;
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VerseScreen(
+                          chapterMap: chapterMap,
+                          initialVerseId: int.parse(random.id),
+                        ),
+                      ),
+                    );
+                    setState(() {});
+                  },
                 ),
               ),
             ),

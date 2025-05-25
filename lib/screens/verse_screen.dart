@@ -41,7 +41,6 @@ class VerseScreen extends StatefulWidget {
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
   late List<PageItem> _pages = [];
-  Map<String, Map<String, String>> _translationsByKey = {};
   int _currentIndex = 0;
   bool _isLoading = true;
 
@@ -56,7 +55,13 @@ class _VerseScreenState extends State<VerseScreen> {
   @override
   void initState() {
     super.initState();
-    _loadVerses();
+    _initVerseScreen();
+  }
+
+  Future<void> _initVerseScreen() async {
+    final provider = context.read<TranslationsProvider>();
+    await provider.loadTranslationFiles();
+    await _loadVerses();
   }
 
   void _resetSliderFadeTimer() {
@@ -68,10 +73,14 @@ class _VerseScreenState extends State<VerseScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isLoading) _loadVerses();
+  }
+
   Future<void> _loadVerses() async {
-    final provider = context.read<TranslationsProvider>();
-    final selectedTranslations = provider.selectedTranslations.toSet();
-    final translationOrder = provider.translationOrder;
+    setState(() => _isLoading = true);
 
     final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
@@ -96,20 +105,10 @@ class _VerseScreenState extends State<VerseScreen> {
       pages.add(VersePage(verse));
     }
 
-    final translations = <String, Map<String, String>>{};
-    for (final key in translationOrder) {
-      if (!selectedTranslations.contains(key)) continue;
-
-      final data = await rootBundle.loadString('assets/$key.json');
-      final Map<String, dynamic> map = json.decode(data);
-      translations[key] = map.map((k, v) => MapEntry(k, v.toString()));
-    }
-
     if (!mounted) return;
 
     setState(() {
       _pages = pages;
-      _translationsByKey = translations;
       _currentIndex = _getInitialPageIndex();
       _pageController = PageController(initialPage: _currentIndex);
       _isLoading = false;
@@ -158,39 +157,50 @@ class _VerseScreenState extends State<VerseScreen> {
   }
 
   List<Widget> _buildTranslations(String verseId) {
-    final provider = context.read<TranslationsProvider>();
+    final provider = context.watch<TranslationsProvider>();
     final selectedTranslations = provider.selectedTranslations.toSet();
     final translationOrder = provider.translationOrder;
+    final translations = provider.verseDataByTranslation;
+
+    if (selectedTranslations.isEmpty) {
+      return [const SizedBox(height: 0)];
+    }
 
     final widgets = <Widget>[];
-
     for (final key in translationOrder) {
       if (!selectedTranslations.contains(key)) continue;
-      final text = _translationsByKey[key]?[verseId];
+      final text = translations[key]?[verseId];
       if (text == null) continue;
 
       widgets.addAll([
-        const SizedBox(height: 20),
+        const SizedBox(height: 10),
         const Divider(thickness: 1),
-        const SizedBox(height: 6),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                text,
-                textAlign: TextAlign.left,
-                style: const TextStyle(fontSize: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
-              Text(
-                _getTranslatorName(key),
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  _getTranslatorName(key),
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ],
@@ -198,6 +208,7 @@ class _VerseScreenState extends State<VerseScreen> {
         ),
       ]);
     }
+
     return widgets;
   }
 
@@ -209,49 +220,73 @@ class _VerseScreenState extends State<VerseScreen> {
   Widget _buildPage(PageItem item) {
     if (item is VersePage) {
       final verse = item.verse;
-      return Padding(
+      return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              verse.text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontFamily: 'Castoro',
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w500,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: IntrinsicHeight(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    verse.text,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontFamily: 'Castoro',
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  ..._buildTranslations(verse.id),
+                ],
               ),
             ),
-            ..._buildTranslations(verse.id),
-          ],
+          ),
         ),
       );
     } else if (item is ChapterDivider) {
       final chapter = item.chapter;
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Chapter ${chapter.id}', style: const TextStyle(fontSize: 18)),
-          const SizedBox(height: 8),
-          Text(
-            chapter.pali,
-            style: const TextStyle(
-              fontSize: 32,
-              fontFamily: 'Castoro',
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w500,
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: IntrinsicHeight(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Chapter ${chapter.id}',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    chapter.pali,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontFamily: 'Castoro',
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    chapter.english,
+                    style: const TextStyle(fontSize: 22),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          Text(
-            chapter.english,
-            style: const TextStyle(fontSize: 22),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       );
     }
     return const SizedBox.shrink();
@@ -260,13 +295,8 @@ class _VerseScreenState extends State<VerseScreen> {
   void _handleTapOnSide({required bool isLeft}) {
     final now = DateTime.now().millisecondsSinceEpoch;
     if (isLeft) {
-      if (now - _lastLeftTapTime < 500) {
-        _leftSkipCount++;
-      } else {
-        _leftSkipCount = 1;
-      }
+      _leftSkipCount = (now - _lastLeftTapTime < 500) ? _leftSkipCount + 1 : 1;
       _lastLeftTapTime = now;
-
       final targetPage = (_currentIndex - _leftSkipCount).clamp(
         0,
         _pages.length - 1,
@@ -274,13 +304,10 @@ class _VerseScreenState extends State<VerseScreen> {
       _pageController.jumpToPage(targetPage);
       setState(() => _currentIndex = targetPage);
     } else {
-      if (now - _lastRightTapTime < 500) {
-        _rightSkipCount++;
-      } else {
-        _rightSkipCount = 1;
-      }
+      _rightSkipCount = (now - _lastRightTapTime < 500)
+          ? _rightSkipCount + 1
+          : 1;
       _lastRightTapTime = now;
-
       final targetPage = (_currentIndex + _rightSkipCount).clamp(
         0,
         _pages.length - 1,

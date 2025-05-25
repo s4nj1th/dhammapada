@@ -15,7 +15,7 @@ class SavedVersesScreen extends StatelessWidget {
 
     return Scaffold(
       body: savedVerses.isEmpty
-          ? const Center(child: Text('No saved verses'))
+          ? const Center(child: Text('No saved verses.'))
           : ListView.builder(
               itemCount: savedVerses.length,
               itemBuilder: (context, index) {
