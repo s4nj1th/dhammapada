@@ -14,7 +14,7 @@ class SettingsScreen extends StatelessWidget {
       context,
       listen: false,
     );
-    final isDark = themeNotifier.themeMode == ThemeMode.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
