@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/verses.dart';
 import '../models/chapters.dart';
-import 'package:dhammapada/screens/verse_screen.dart';
-import 'package:dhammapada/screens/saved_verses_screen.dart';
-import 'package:dhammapada/screens/history_screen.dart';
-import 'package:dhammapada/screens/settings_screen.dart';
+import '/screens/verse_screen.dart';
+import '/screens/saved_verses_screen.dart';
+import '/screens/history_screen.dart';
+import '/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/verse_tracker_provider.dart';
 

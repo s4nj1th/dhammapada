@@ -80,7 +80,7 @@ class MyApp extends StatelessWidget {
             : _themeFromScheme(darkScheme);
 
         return MaterialApp(
-          title: 'Dhammapada',
+          title: 'PocketDhamma',
           debugShowCheckedModeBanner: false,
           themeMode: themeNotifier.themeMode,
           theme: _themeFromScheme(lightScheme),

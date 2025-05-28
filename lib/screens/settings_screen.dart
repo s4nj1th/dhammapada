@@ -108,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'Dhammapada',
+                applicationName: 'PocketDhamma',
                 applicationVersion: '1.0.0',
               );
             },

@@ -1,5 +1,5 @@
-name: dhammapada
-description: "A Dhammapada App"
+name: pocket_dhamma
+description: "A Dhammapada reader app"
 publish_to: 'none'
 
 version: 1.0.0+1
