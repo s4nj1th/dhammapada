@@ -32,7 +32,7 @@ flutter:
     - assets/verses.json
     - assets/translations/max_muller.json
     - assets/translations/woodwards.json
-    - assets/translations/thannisaro.json
+    - assets/translations/thanissaro.json
     - assets/icon.png
 
   fonts:
@@ -41,3 +41,8 @@ flutter:
         - asset: assets/fonts/Castoro-Regular.ttf
         - asset: assets/fonts/Castoro-Italic.ttf
           style: italic
+    - family: Atkinson Hyperlegible
+      fonts:
+        - asset: assets/fonts/AtkinsonHyperlegible-Regular.ttf
+        - asset: assets/fonts/AtkinsonHyperlegible-Bold.ttf
+          weight: 700

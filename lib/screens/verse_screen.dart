@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../models/verses.dart';
 import '../models/chapters.dart';
-import '../providers/saved_verses_provider.dart';
+import '../providers/bookmarks_provider.dart';
 import '../providers/verse_tracker_provider.dart';
 import '../providers/translations_provider.dart';
+import '../theme_notifier.dart';
 
 abstract class PageItem {}
 
@@ -43,10 +44,8 @@ class _VerseScreenState extends State<VerseScreen> {
   List<PageItem> _pages = [];
   int _currentIndex = 0;
   bool _isLoading = true;
-
   double _sliderOpacity = 0.0;
   Timer? _hideSliderTimer;
-
   int _leftSkipCount = 0;
   int _rightSkipCount = 0;
   int _lastLeftTapTime = 0;
@@ -67,7 +66,6 @@ class _VerseScreenState extends State<VerseScreen> {
   void _resetSliderFadeTimer() {
     _hideSliderTimer?.cancel();
     setState(() => _sliderOpacity = 1.0);
-
     _hideSliderTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => _sliderOpacity = 0.0);
     });
@@ -75,10 +73,8 @@ class _VerseScreenState extends State<VerseScreen> {
 
   Future<void> _loadVerses() async {
     setState(() => _isLoading = true);
-
     final jsonString = await rootBundle.loadString('assets/verses.json');
     final Map<String, dynamic> jsonData = json.decode(jsonString);
-
     final allVerses =
         jsonData.entries.map((e) => Verse.fromJson(e.key, e.value)).toList()
           ..sort((a, b) {
@@ -211,6 +207,9 @@ class _VerseScreenState extends State<VerseScreen> {
   }
 
   Widget _buildPage(PageItem item) {
+    final themeNotifier = context.watch<ThemeNotifier>();
+    final serifFont = themeNotifier.useSystemFont ? 'Serif' : 'Castoro';
+
     if (item is VersePage) {
       final verse = item.verse;
       return SingleChildScrollView(
@@ -227,9 +226,9 @@ class _VerseScreenState extends State<VerseScreen> {
                   Text(
                     verse.text,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
-                      fontFamily: 'Castoro',
+                      fontFamily: serifFont,
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w500,
                     ),
@@ -251,9 +250,9 @@ class _VerseScreenState extends State<VerseScreen> {
             const SizedBox(height: 8),
             Text(
               chapter.pali,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 32,
-                fontFamily: 'Castoro',
+                fontFamily: serifFont,
                 fontStyle: FontStyle.italic,
                 fontWeight: FontWeight.w500,
               ),
@@ -269,6 +268,7 @@ class _VerseScreenState extends State<VerseScreen> {
         ),
       );
     }
+
     return const SizedBox.shrink();
   }
 

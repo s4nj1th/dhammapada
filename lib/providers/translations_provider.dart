@@ -7,7 +7,7 @@ class TranslationsProvider with ChangeNotifier {
   final Map<String, String> _allTranslations = {
     'max_muller': 'Max Müller',
     'woodwards': 'FL Woodwards',
-    'thannisaro': 'Ṭhānissaro Bhikkhu',
+    'thanissaro': 'Thānissaro Bhikkhu',
   };
 
   static const _prefsSelectedKey = 'selected_translations';

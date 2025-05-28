@@ -39,26 +39,31 @@ class HistoryScreen extends StatelessWidget {
         final group = reversedGrouped[index];
         final start = group.first;
         final end = group.last;
-        final subtitle = start == end
-            ? 'Verse: $start'
-            : 'Verses: $start to $end';
+        final title = start == end ? 'Verse: $start' : 'Verses: $start to $end';
 
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            title: Text(subtitle),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      VerseScreen(chapterMap: chapterMap, initialVerseId: end),
-                ),
-              );
-            },
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: Text(title, textAlign: TextAlign.center),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => VerseScreen(
+                        chapterMap: chapterMap,
+                        initialVerseId: end,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         );
       },

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../models/verses.dart';
 import '../models/chapters.dart';
 import '/screens/verse_screen.dart';
-import '/screens/saved_verses_screen.dart';
+import 'bookmarks_screen.dart';
 import '/screens/history_screen.dart';
 import '/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
@@ -122,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Center(
                 child: Image.asset(
                   'assets/icon.png',
-                  height: 150,
+                  height: 180,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -138,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen>
               label: Text(
                 lastViewed == null ? 'Start anew' : 'Continue where you left',
                 textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               onPressed: () async {
                 if (lastViewed != null) {
@@ -179,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen>
               },
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 60),
         ],
       ),
     );
@@ -244,7 +245,10 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
                         },
-                        child: const Text('Read Chapter'),
+                        child: const Text(
+                          'Read Chapter',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -291,7 +295,10 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           );
                         },
-                        child: const Text('Read Verse'),
+                        child: const Text(
+                          'Read Verse',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -330,9 +337,11 @@ class _HomeScreenState extends State<HomeScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 30),
               Flexible(flex: 4, child: leftContent),
               const SizedBox(width: 40),
               Flexible(flex: 5, child: rightContent),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -357,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen>
         ? _selectedChapterId
         : chapters.keys.first;
 
-    const titles = ['Chapters', 'Saved Verses', 'History', 'Settings'];
+    const titles = ['Reader', 'Bookmarks', 'History', 'Settings'];
     const icons = [Icons.book, Icons.bookmark, Icons.history, Icons.settings];
 
     return Scaffold(

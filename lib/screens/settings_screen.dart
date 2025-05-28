@@ -34,6 +34,20 @@ class SettingsScreen extends StatelessWidget {
 
           const Divider(height: 32),
 
+          const Text('Accessibility', style: TextStyle(fontSize: 18)),
+          SwitchListTile(
+            title: const Text('System Fonts'),
+            value: themeNotifier.useSystemFont,
+            onChanged: (val) => themeNotifier.toggleFont(val),
+          ),
+
+          // SwitchListTile(
+          //   title: const Text('Sepia Mode'),
+          //   value: themeNotifier.sepiaMode,
+          //   onChanged: (val) => themeNotifier.toggleSepia(val),
+          // ),
+          const Divider(height: 32),
+
           const Text('Translations', style: TextStyle(fontSize: 18)),
           Consumer<TranslationsProvider>(
             builder: (context, provider, _) {
@@ -69,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
               showAboutDialog(
                 context: context,
                 applicationName: 'PocketDhamma',
-                applicationVersion: '1.0.0',
+                applicationVersion: '0.0.0',
               );
             },
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/chapters.dart';
-import '../providers/saved_verses_provider.dart';
+import '../providers/bookmarks_provider.dart';
 import 'verse_screen.dart';
 
 class SavedVersesScreen extends StatelessWidget {
