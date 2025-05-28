@@ -73,8 +73,6 @@ class _VerseScreenState extends State<VerseScreen> {
     });
   }
 
-  // REMOVED didChangeDependencies() to prevent reloading on rebuild
-
   Future<void> _loadVerses() async {
     setState(() => _isLoading = true);
 
@@ -145,10 +143,9 @@ class _VerseScreenState extends State<VerseScreen> {
     if (pageIndex < 0 || pageIndex >= _pages.length) return;
     final currentItem = _pages[pageIndex];
     if (currentItem is VersePage) {
-      context.read<VerseTrackerProvider>().recordVerseView(
-        currentItem.verse.chapter,
-        currentItem.verse.id,
-      );
+      final tracker = context.read<VerseTrackerProvider>();
+      tracker.removeOldestEntryIfNeeded();
+      tracker.recordVerseView(currentItem.verse.chapter, currentItem.verse.id);
     }
   }
 
@@ -389,18 +386,25 @@ class _VerseScreenState extends State<VerseScreen> {
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 300),
                       opacity: _sliderOpacity,
-                      child: Slider(
-                        min: 0,
-                        max: (_pages.length - 1).toDouble(),
-                        value: _currentIndex.toDouble(),
-                        label: currentVerse != null
-                            ? 'Verse ${currentVerse.id}'
-                            : '',
-                        onChanged: (value) {
-                          final newIndex = value.round();
-                          _pageController.jumpToPage(newIndex);
-                          _resetSliderFadeTimer();
-                        },
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          thumbShape: RoundSliderThumbShape(
+                            enabledThumbRadius: 10,
+                          ),
+                        ),
+                        child: Slider(
+                          min: 0,
+                          max: (_pages.length - 1).toDouble(),
+                          value: _currentIndex.toDouble(),
+                          label: currentVerse != null
+                              ? 'Verse ${currentVerse.id}'
+                              : '',
+                          onChanged: (value) {
+                            final newIndex = value.round();
+                            _pageController.jumpToPage(newIndex);
+                            _resetSliderFadeTimer();
+                          },
+                        ),
                       ),
                     ),
                   ),

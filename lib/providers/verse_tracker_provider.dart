@@ -64,6 +64,14 @@ class VerseTrackerProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void removeOldestEntryIfNeeded() {
+    if (_viewHistory.length >= 100) {
+      _viewHistory.removeAt(0);
+      _saveHistory();
+      notifyListeners();
+    }
+  }
 }
 
 class HistoryEntry {

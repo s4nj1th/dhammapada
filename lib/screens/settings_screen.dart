@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme_notifier.dart';
 import '../providers/verse_tracker_provider.dart';
 import '../providers/translations_provider.dart';
@@ -59,7 +60,39 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
 
-          const Divider(height: 32),
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About'),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'PocketDhamma',
+                applicationVersion: '1.0.0',
+              );
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.code),
+            title: const Text('Contribute'),
+            onTap: () {
+              launchUrl(
+                Uri.parse('https://github.com/s4nj1th/pocket-dhamma'),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+          ),
+
+          // ListTile(
+          //   leading: const Icon(Icons.favorite),
+          //   title: const Text('Donate'),
+          //   onTap: () {
+          //     launchUrl(Uri.parse(''), mode: LaunchMode.externalApplication);
+          //   },
+          // ),
+          const Divider(),
 
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
@@ -97,20 +130,6 @@ class SettingsScreen extends StatelessWidget {
                   const SnackBar(content: Text('History cleared')),
                 );
               }
-            },
-          ),
-
-          const Divider(),
-
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('About'),
-            onTap: () {
-              showAboutDialog(
-                context: context,
-                applicationName: 'PocketDhamma',
-                applicationVersion: '1.0.0',
-              );
             },
           ),
         ],
