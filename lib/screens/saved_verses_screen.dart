@@ -10,7 +10,6 @@ class SavedVersesScreen extends StatelessWidget {
   const SavedVersesScreen({super.key, required this.chapterMap});
 
   int _calculateCrossAxisCount(double width) {
-    // If width > 600, use 2 columns, else 1
     return width > 600 ? 2 : 1;
   }
 
@@ -30,7 +29,6 @@ class SavedVersesScreen extends StatelessWidget {
                 return Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      // Limit the max width so 2 columns don't stretch too wide
                       maxWidth: crossAxisCount == 2 ? 800 : double.infinity,
                     ),
                     child: GridView.builder(
@@ -43,7 +41,7 @@ class SavedVersesScreen extends StatelessWidget {
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
-                        childAspectRatio: 3, // wide cards, adjust as needed
+                        childAspectRatio: 3,
                       ),
                       itemBuilder: (context, index) {
                         final verse = savedVerses[index];
@@ -62,8 +60,7 @@ class SavedVersesScreen extends StatelessWidget {
                             );
                           },
                           child: SizedBox(
-                            height:
-                                200, // fixed height for the card so grid knows how tall it is
+                            height: 200,
                             child: Card(
                               margin: EdgeInsets.zero,
                               child: Center(

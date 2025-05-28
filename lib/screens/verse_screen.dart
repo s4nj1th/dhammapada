@@ -40,7 +40,7 @@ class VerseScreen extends StatefulWidget {
 
 class _VerseScreenState extends State<VerseScreen> {
   late PageController _pageController;
-  late List<PageItem> _pages = [];
+  List<PageItem> _pages = [];
   int _currentIndex = 0;
   bool _isLoading = true;
 
@@ -73,11 +73,7 @@ class _VerseScreenState extends State<VerseScreen> {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isLoading) _loadVerses();
-  }
+  // REMOVED didChangeDependencies() to prevent reloading on rebuild
 
   Future<void> _loadVerses() async {
     setState(() => _isLoading = true);
@@ -337,7 +333,11 @@ class _VerseScreenState extends State<VerseScreen> {
                         : Theme.of(context).colorScheme.outline,
                     size: 28,
                   ),
-                  onPressed: () => savedProvider.toggleSave(currentVerse),
+                  onPressed: () {
+                    context.read<SavedVersesProvider>().toggleSave(
+                      currentVerse,
+                    );
+                  },
                 ),
               ]
             : null,
