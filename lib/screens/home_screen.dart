@@ -29,11 +29,11 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late Future<VersesAndChapters> _futureVersesAndChapters;
   final PageController _pageController = PageController();
+  late final TextEditingController _controller;
 
   int _selectedIndex = 0;
   int _selectedChapterId = 1;
   String _verseInput = '';
-  String _searchQuery = '';
   int _sliderPage = 0;
 
   late AnimationController _floatingController;
@@ -42,6 +42,8 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+
+    _controller = TextEditingController();
 
     _futureVersesAndChapters = Future.wait([_loadVerses(), _loadChapters()])
         .then(
@@ -55,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
+
     _floatingAnimation = Tween<double>(begin: 0, end: 15).animate(
       CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
@@ -62,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _controller.dispose();
     _pageController.dispose();
     _floatingController.dispose();
     super.dispose();
@@ -256,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
+
               Card(
                 margin: const EdgeInsets.all(16),
                 child: Padding(
@@ -307,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
+
               Card(
                 margin: const EdgeInsets.all(16),
                 child: Padding(
@@ -317,13 +323,12 @@ class _HomeScreenState extends State<HomeScreen>
                       SizedBox(
                         width: 200,
                         child: TextField(
+                          controller: _controller,
                           textAlign: TextAlign.center,
                           decoration: const InputDecoration(
                             labelText: 'Search Query',
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (val) =>
-                              setState(() => _searchQuery = val),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -337,12 +342,15 @@ class _HomeScreenState extends State<HomeScreen>
                           ).colorScheme.onPrimaryContainer,
                         ),
                         onPressed: () {
-                          if (_searchQuery.trim().isEmpty) return;
+                          final query = _controller.text.trim();
+
+                          if (query.isEmpty) return;
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => SearchScreen(
-                                initialQuery: _searchQuery,
+                                initialQuery: query,
                                 chapterMap: chapterMap,
                               ),
                             ),
@@ -431,7 +439,6 @@ class _HomeScreenState extends State<HomeScreen>
           child: Text(titles[_selectedIndex]),
         ),
       ),
-
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) => setState(() => _selectedIndex = index),
@@ -458,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen>
                 );
               },
               child: Padding(
-                padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   padding: const EdgeInsets.all(8),
