@@ -174,7 +174,7 @@ class _VerseScreenState extends State<VerseScreen> {
                 children: [
                   Text(
                     text,
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.left,
                     style: const TextStyle(fontSize: 20),
                   ),
                 ],
@@ -185,10 +185,10 @@ class _VerseScreenState extends State<VerseScreen> {
                 child: Text(
                   _getTranslatorName(key),
                   textAlign: TextAlign.right,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
               ),
@@ -212,30 +212,32 @@ class _VerseScreenState extends State<VerseScreen> {
 
     if (item is VersePage) {
       final verse = item.verse;
+      final screenHeight = MediaQuery.of(context).size.height;
       return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: IntrinsicHeight(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    verse.text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontFamily: serifFont,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                    ),
+        child: Center(
+          // Center outside to limit maxWidth properly
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: screenHeight - kToolbarHeight - 180,
+              maxWidth: 400,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  verse.text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontFamily: serifFont,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
                   ),
-                  ..._buildTranslations(verse.id),
-                ],
-              ),
+                ),
+                ..._buildTranslations(verse.id),
+              ],
             ),
           ),
         ),

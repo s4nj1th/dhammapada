@@ -7,6 +7,7 @@ import '/screens/verse_screen.dart';
 import 'bookmarks_screen.dart';
 import '/screens/history_screen.dart';
 import '/screens/settings_screen.dart';
+import '/screens/search_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/verse_tracker_provider.dart';
 
@@ -32,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen>
   int _selectedIndex = 0;
   int _selectedChapterId = 1;
   String _verseInput = '';
+  String _searchQuery = '';
   int _sliderPage = 0;
 
   late AnimationController _floatingController;
@@ -266,7 +268,8 @@ class _HomeScreenState extends State<HomeScreen>
                         child: TextField(
                           textAlign: TextAlign.center,
                           decoration: const InputDecoration(
-                            label: Center(child: Text('Verse Number')),
+                            label: Text('Verse Number'),
+                            border: OutlineInputBorder(),
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (val) => _verseInput = val,
@@ -304,13 +307,63 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
+              Card(
+                margin: const EdgeInsets.all(16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          decoration: const InputDecoration(
+                            labelText: 'Search Query',
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (val) =>
+                              setState(() => _searchQuery = val),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primaryContainer,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                        ),
+                        onPressed: () {
+                          if (_searchQuery.trim().isEmpty) return;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SearchScreen(
+                                initialQuery: _searchQuery,
+                                chapterMap: chapterMap,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Search Verses',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(2, (index) {
+          children: List.generate(3, (index) {
             final isActive = _sliderPage == index;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -320,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen>
               decoration: BoxDecoration(
                 color: isActive
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey,
+                    : Theme.of(context).colorScheme.outline,
                 shape: BoxShape.circle,
               ),
             );
@@ -419,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen>
                     icons[index],
                     color: isSelected
                         ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
+                        : Theme.of(context).colorScheme.outline,
                     size: 28,
                   ),
                 ),
