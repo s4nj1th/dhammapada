@@ -1,6 +1,13 @@
-# PocketDhamma
+<div align="center">
+<h1>PocketDhamma</h1>
 
-PocketDhamma is a lightweight, static mobile app built with Flutter for offline reading of the _Dhammapada_.
+<p>PocketDhamma is a lightweight, static mobile app built with Flutter for offline reading of the <i>Dhammapada</i>.</p>
+<br/>
+<br/>
+<img src="icon.png" alt="logo" width="150">
+<br/>
+<br/>
+</div>
 
 ## Features
 
