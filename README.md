@@ -40,6 +40,8 @@
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
   <img src="screenshots/bookmarks.png" alt="Bookmarks" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
+  <img src="screenshots/search.png" alt="Search" width="200"
+       style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
   <img src="screenshots/settings.png" alt="Settings" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
 </div>
