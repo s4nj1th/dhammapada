@@ -7,6 +7,7 @@ import '../providers/translations_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+  static const appVersion = '1.1.0';
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
               showAboutDialog(
                 context: context,
                 applicationName: 'PocketDhamma',
-                applicationVersion: '0.0.0',
+                applicationVersion: appVersion,
               );
             },
           ),
