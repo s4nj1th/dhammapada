@@ -3,9 +3,12 @@
 
 <p>PocketDhamma is a lightweight, static mobile app built with Flutter for offline reading of the <i>Dhammapada</i>.</p>
 <br/>
-<br/>
 <img src="icon.png" alt="logo" width="150">
 <br/>
+<br/>
+<a href="https://apt.izzysoft.de/packages/com.s4nj1th.pocket_dhamma" target="_blank">
+<img src="https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.s4nj1th.pocket_dhamma&label=IzzyOnDroid" alt="IzzyOnDroid badge">
+</a>
 <br/>
 </div>
 
