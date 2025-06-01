@@ -37,9 +37,9 @@
 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 1rem;" align="center">
   <img src="screenshots/home.png" alt="Home" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/chapters.png" alt="Chapters" width="200"
-       style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
   <img src="screenshots/verses.png" alt="Verses" width="200"
+       style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
+  <img src="screenshots/chapters.png" alt="Chapters" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
   <img src="screenshots/bookmarks.png" alt="Bookmarks" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
