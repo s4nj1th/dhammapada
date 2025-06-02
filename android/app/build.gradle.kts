@@ -1,5 +1,7 @@
 import java.util.Properties
 import java.io.FileInputStream
+import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 
 plugins {
     id("com.android.application")
@@ -49,8 +51,8 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true // Enable code shrinking
-            isShrinkResources = true // Required for shrinking resources
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -65,4 +67,23 @@ android {
 
 flutter {
     source = "../.."
+}
+
+val abiCodes = mapOf(
+    "x86_64" to 1,
+    "armeabi-v7a" to 2,
+    "arm64-v8a" to 3
+)
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val abi = output.filters.find { it.filterType.name == "ABI" }?.identifier
+            val baseVersionCode = variant.outputs.first().versionCode.get()
+            val abiCode = abiCodes[abi]
+            if (abiCode != null) {
+                output.versionCode.set(baseVersionCode * 10 + abiCode)
+            }
+        }
+    }
 }
