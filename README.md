@@ -53,7 +53,7 @@
 
 ## Installation
 
-You can install PocketDhamma by downloading the latest APK from the [Releases](https://github.com/s4nj1th/pocket-dhamma/releases) section, or by getting it via the [IzzyOnDroid repository](https://apt.izzysoft.de/fdroid/index/info/com.s4nj1th.pocket_dhamma) on F-Droid.
+You can install PocketDhamma by downloading the latest APK from the [Releases](https://github.com/s4nj1th/pocket-dhamma/releases) section, or by getting it via the [IzzyOnDroid repository](https://apt.izzysoft.de/packages/com.s4nj1th.pocket_dhamma) on F-Droid.
 
 Soon to be published on the Google Play Store.
 

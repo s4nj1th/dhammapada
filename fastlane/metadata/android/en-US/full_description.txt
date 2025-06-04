@@ -1,13 +1,9 @@
 PocketDhamma is a lightweight, static mobile app built with Flutter for offline reading of the Dhammapada.
 
-- Offline Support: Access multiple translations of the Dhammapada without requiring an internet connection.
 
-- Comprehensive Search: Perform full-text searches across selected translations to locate specific verses efficiently.
-
-- Minimalist Interface: Focused on readability and clarity through a clean, distraction-free design.
-
-- Dynamic Theming: Implements Material 3 (Material You) principles, including adaptive light and dark modes.
-
-- System-Integrated: Styling Applies dynamic color theming for seamless integration with system-level aesthetics.
-
-- Cross-Platform: Compatibility Built for consistent performance and appearance on both Android and iOS platforms.
+- <b>Offline Support</b>: Access multiple translations of the Dhammapada without requiring an internet connection.
+- <b>Comprehensive Search</b>: Perform full-text searches across selected translations to locate specific verses efficiently.
+- <b>Minimalist Interface</b>: Focused on readability and clarity through a clean, distraction-free design.
+- <b>Dynamic Theming</b>: Implements Material 3 (Material You) principles, including adaptive light and dark modes.
+- <b>System-Integrated</b>: Styling Applies dynamic color theming for seamless integration with system-level aesthetics.
+- <b>Cross-Platform</b>: Compatibility Built for consistent performance and appearance on both Android and iOS platforms.
