@@ -79,7 +79,7 @@ androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
             val abi = output.filters.find { it.filterType.name == "ABI" }?.identifier
-            val baseVersionCode = variant.outputs.first().versionCode.get()
+            val baseVersionCode = flutter.versionCode
             val abiCode = abiCodes[abi]
             if (abiCode != null) {
                 output.versionCode.set(baseVersionCode * 10 + abiCode)
