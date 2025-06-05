@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme_notifier.dart';
 import '../providers/verse_tracker_provider.dart';
@@ -7,7 +8,7 @@ import '../providers/translations_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-  static const appVersion = '1.2.0';
+  static const appVersion = '1.2.1';
 
   @override
   Widget build(BuildContext context) {
@@ -100,13 +101,125 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
 
-          // ListTile(
-          //   leading: const Icon(Icons.favorite),
-          //   title: const Text('Donate'),
-          //   onTap: () {
-          //     launchUrl(Uri.parse(''), mode: LaunchMode.externalApplication);
-          //   },
-          // ),
+          ListTile(
+            leading: const Icon(Icons.favorite),
+            title: const Text('Donate'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Support the Project',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          ListTile(
+                            leading: const Icon(Icons.volunteer_activism),
+                            title: const Text('Liberapay'),
+                            trailing: const Icon(Icons.open_in_new),
+                            subtitle: const Text(
+                              'https://liberapay.com/s4nj1th',
+                            ),
+                            onTap: () {
+                              launchUrl(
+                                Uri.parse('https://liberapay.com/s4nj1th'),
+                                mode: LaunchMode.externalApplication,
+                              );
+                            },
+                            onLongPress: () async {
+                              await Clipboard.setData(
+                                const ClipboardData(
+                                  text: 'https://liberapay.com/s4nj1th',
+                                ),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link copied to clipboard'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.local_cafe),
+                            title: const Text('Ko-fi'),
+                            subtitle: const Text('https://ko-fi.com/s4nj1th'),
+                            trailing: const Icon(Icons.open_in_new),
+                            onTap: () {
+                              launchUrl(
+                                Uri.parse('https://ko-fi.com/s4nj1th'),
+                                mode: LaunchMode.externalApplication,
+                              );
+                            },
+                            onLongPress: () async {
+                              await Clipboard.setData(
+                                const ClipboardData(
+                                  text: 'https://ko-fi.com/s4nj1th',
+                                ),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link copied to clipboard'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.account_balance_wallet),
+                            title: const Text('Donate via UPI'),
+                            subtitle: const Text('s4nj1th@sbi'),
+                            trailing: const Icon(Icons.open_in_new),
+                            onTap: () {
+                              launchUrl(Uri.parse('upi://pay?pa=s4nj1th@sbi'));
+                            },
+                            onLongPress: () async {
+                              await Clipboard.setData(
+                                const ClipboardData(text: 's4nj1th@sbi'),
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Link copied to clipboard'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Close'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+
           const Divider(),
 
           ListTile(
