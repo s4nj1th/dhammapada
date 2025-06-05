@@ -3,7 +3,7 @@
 
 <p>PocketDhamma is a lightweight, static mobile app built with Flutter for offline reading of the <i>Dhammapada</i>.</p>
 <br/>
-<img src="icon.png" alt="logo" width="150">
+<img src="fastlane/metadata/android/en-US/images/icon.png" alt="logo" width="256">
 <br/>
 <br/>
 <a href="https://apt.izzysoft.de/packages/com.s4nj1th.pocket_dhamma" target="_blank">
@@ -35,19 +35,19 @@
 ## Screenshots
 
 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 1rem;" align="center">
-  <img src="screenshots/home.png" alt="Home" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Home" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/verses.png" alt="Verses" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Verses" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/chapters.png" alt="Chapters" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Chapters" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/bookmarks.png" alt="Bookmarks" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Bookmarks" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/searches.png" alt="Search" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" alt="Search" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/history.png" alt="History" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" alt="History" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
-  <img src="screenshots/settings.png" alt="Settings" width="200"
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7.png" alt="Settings" width="200"
        style="border-radius: 6px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);" />
 </div>
 

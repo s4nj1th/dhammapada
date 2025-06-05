@@ -274,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen>
                           textAlign: TextAlign.center,
                           decoration: const InputDecoration(
                             label: Text('Verse Number'),
-                            border: OutlineInputBorder(),
+                            border: UnderlineInputBorder(),
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (val) => _verseInput = val,
@@ -322,13 +322,24 @@ class _HomeScreenState extends State<HomeScreen>
                     children: [
                       SizedBox(
                         width: 200,
-                        child: TextField(
-                          controller: _controller,
-                          textAlign: TextAlign.center,
-                          decoration: const InputDecoration(
-                            labelText: 'Search Query',
-                            border: OutlineInputBorder(),
-                          ),
+                        child: Stack(
+                          alignment: Alignment.centerLeft,
+                          children: [
+                            TextField(
+                              controller: _controller,
+                              decoration: const InputDecoration(
+                                border: UnderlineInputBorder(),
+                                contentPadding: EdgeInsets.only(left: 36),
+                              ),
+                            ),
+                            Positioned(
+                              left: 0,
+                              child: Icon(
+                                Icons.search,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),

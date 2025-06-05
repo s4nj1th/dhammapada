@@ -46,10 +46,6 @@ class _VerseScreenState extends State<VerseScreen> {
   bool _isLoading = true;
   double _sliderOpacity = 0.0;
   Timer? _hideSliderTimer;
-  int _leftSkipCount = 0;
-  int _rightSkipCount = 0;
-  int _lastLeftTapTime = 0;
-  int _lastRightTapTime = 0;
 
   @override
   void initState() {
@@ -165,7 +161,7 @@ class _VerseScreenState extends State<VerseScreen> {
         const SizedBox(height: 10),
         const Divider(thickness: 1),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -214,9 +210,8 @@ class _VerseScreenState extends State<VerseScreen> {
       final verse = item.verse;
       final screenHeight = MediaQuery.of(context).size.height;
       return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),
+        padding: const EdgeInsets.symmetric(vertical: 40),
         child: Center(
-          // Center outside to limit maxWidth properly
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: screenHeight - kToolbarHeight - 180,
@@ -226,14 +221,17 @@ class _VerseScreenState extends State<VerseScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  verse.text,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontFamily: serifFont,
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w500,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    verse.text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontFamily: serifFont,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
                 ..._buildTranslations(verse.id),
@@ -274,29 +272,11 @@ class _VerseScreenState extends State<VerseScreen> {
     return const SizedBox.shrink();
   }
 
-  void _handleTapOnSide({required bool isLeft}) {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (isLeft) {
-      _leftSkipCount = (now - _lastLeftTapTime < 500) ? _leftSkipCount + 1 : 1;
-      _lastLeftTapTime = now;
-      final targetPage = (_currentIndex - _leftSkipCount).clamp(
-        0,
-        _pages.length - 1,
-      );
-      _pageController.jumpToPage(targetPage);
-      setState(() => _currentIndex = targetPage);
-    } else {
-      _rightSkipCount = (now - _lastRightTapTime < 500)
-          ? _rightSkipCount + 1
-          : 1;
-      _lastRightTapTime = now;
-      final targetPage = (_currentIndex + _rightSkipCount).clamp(
-        0,
-        _pages.length - 1,
-      );
-      _pageController.jumpToPage(targetPage);
-      setState(() => _currentIndex = targetPage);
-    }
+  void _handleTap({required bool isLeft, required int step}) {
+    final offset = isLeft ? -step : step;
+    final newIndex = (_currentIndex + offset).clamp(0, _pages.length - 1);
+    _pageController.jumpToPage(newIndex);
+    setState(() => _currentIndex = newIndex);
     _resetSliderFadeTimer();
   }
 
@@ -357,6 +337,8 @@ class _VerseScreenState extends State<VerseScreen> {
                           itemBuilder: (context, index) =>
                               _buildPage(_pages[index]),
                         ),
+
+                        // Left Tap Area
                         Positioned(
                           left: 0,
                           top: 0,
@@ -364,9 +346,13 @@ class _VerseScreenState extends State<VerseScreen> {
                           width: 60,
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: () => _handleTapOnSide(isLeft: true),
+                            onTap: () => _handleTap(isLeft: true, step: 1),
+                            onDoubleTap: () =>
+                                _handleTap(isLeft: true, step: 5),
                           ),
                         ),
+
+                        // Right Tap Area
                         Positioned(
                           right: 0,
                           top: 0,
@@ -374,40 +360,47 @@ class _VerseScreenState extends State<VerseScreen> {
                           width: 60,
                           child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: () => _handleTapOnSide(isLeft: false),
+                            onTap: () => _handleTap(isLeft: false, step: 1),
+                            onDoubleTap: () =>
+                                _handleTap(isLeft: false, step: 5),
                           ),
                         ),
                       ],
                     ),
                   ),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 30,
+                      vertical: 50,
+                      horizontal: 50,
                     ),
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 300),
-                      opacity: _sliderOpacity,
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          thumbShape: RoundSliderThumbShape(
-                            enabledThumbRadius: 10,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 300),
+                          opacity: _sliderOpacity,
+                          child: SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 10,
+                              ),
+                              overlayShape: SliderComponentShape.noOverlay,
+                              trackHeight: 4,
+                            ),
+                            child: Slider(
+                              min: 0,
+                              max: (_pages.length - 1).toDouble(),
+                              value: _currentIndex.toDouble(),
+                              onChanged: (value) {
+                                final newIndex = value.round();
+                                _pageController.jumpToPage(newIndex);
+                                _resetSliderFadeTimer();
+                              },
+                            ),
                           ),
                         ),
-                        child: Slider(
-                          min: 0,
-                          max: (_pages.length - 1).toDouble(),
-                          value: _currentIndex.toDouble(),
-                          label: currentVerse != null
-                              ? 'Verse ${currentVerse.id}'
-                              : '',
-                          onChanged: (value) {
-                            final newIndex = value.round();
-                            _pageController.jumpToPage(newIndex);
-                            _resetSliderFadeTimer();
-                          },
-                        ),
-                      ),
+                      ],
                     ),
                   ),
                 ],

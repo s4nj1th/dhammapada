@@ -12,6 +12,8 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final rawVerseIds = Provider.of<VerseTrackerProvider>(context).viewHistory
         .expand((entry) => entry.verseIds)
         .map((id) => int.tryParse(id))
@@ -19,7 +21,20 @@ class HistoryScreen extends StatelessWidget {
         .toList();
 
     if (rawVerseIds.isEmpty) {
-      return const Center(child: Text("No history yet."));
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: colorScheme.surface,
+          centerTitle: true,
+          elevation: 0,
+          title: const Text('History'),
+        ),
+        body: Center(
+          child: Text(
+            "No history yet.",
+            style: TextStyle(color: colorScheme.onSurface.withAlpha(153)),
+          ),
+        ),
+      );
     }
 
     final List<List<int>> grouped = [];
@@ -33,24 +48,33 @@ class HistoryScreen extends StatelessWidget {
 
     final reversedGrouped = grouped.reversed.toList();
 
-    return ListView.builder(
-      itemCount: reversedGrouped.length,
-      itemBuilder: (context, index) {
-        final group = reversedGrouped[index];
-        final start = group.first;
-        final end = group.last;
-        final title = start == end ? 'Verse: $start' : 'Verses: $start to $end';
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            itemCount: reversedGrouped.length + 1,
+            separatorBuilder: (_, __) =>
+                Divider(color: colorScheme.onSurface.withAlpha(51)),
+            itemBuilder: (context, index) {
+              if (index == reversedGrouped.length) {
+                return const SizedBox(height: 80);
+              }
 
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                title: Text(title, textAlign: TextAlign.center),
+              final group = reversedGrouped[index];
+              final start = group.first;
+              final end = group.last;
+              final title = start == end
+                  ? 'Verse: $start'
+                  : 'Verses: $start to $end';
+
+              return ListTile(
+                title: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: colorScheme.onSurface),
+                ),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -62,11 +86,11 @@ class HistoryScreen extends StatelessWidget {
                     ),
                   );
                 },
-              ),
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
