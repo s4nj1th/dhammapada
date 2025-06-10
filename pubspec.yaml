@@ -33,6 +33,7 @@ flutter:
     - assets/translations/max_muller.json
     - assets/translations/woodwards.json
     - assets/translations/thanissaro.json
+    - asset/translations/schenpen_sangmo.json
     - assets/icon.png
 
   fonts:
