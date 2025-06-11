@@ -8,6 +8,7 @@ class TranslationsProvider with ChangeNotifier {
     'max_muller': 'Max Müller',
     'woodwards': 'FL Woodwards',
     'thanissaro': 'Thānissaro Bhikkhu',
+    'schenpen_sangmo': 'Schenpen Sangmo (German)',
   };
 
   static const _prefsSelectedKey = 'selected_translations';
