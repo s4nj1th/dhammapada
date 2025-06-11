@@ -25,3 +25,10 @@ This folder contains the Dhammapada translations used in PocketDhamma.
 - License: Public Domain
 - Source: [Project Gutenberg](https://www.gutenberg.org/ebooks/35185)
 - Notes: Free to use without restrictions.
+
+-- 
+
+## Schenpen Sangmo
+
+- Source: [PDF](https://d4w4j5v3.delivery.rocketcdn.me/wp-content/uploads/2023/11/dhammapada.pdf), [Dhammapada.de](http://www.dhammapada.de/)
+- Notes: Non-commercial use only.
