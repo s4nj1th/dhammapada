@@ -2,7 +2,7 @@ name: pocket_dhamma
 description: "A Dhammapada reader app"
 publish_to: 'none'
 
-version: 1.2.1+121
+version: 1.2.2+122
 
 environment:
   sdk: ^3.8.0
@@ -33,7 +33,7 @@ flutter:
     - assets/translations/max_muller.json
     - assets/translations/woodwards.json
     - assets/translations/thanissaro.json
-    - asset/translations/schenpen_sangmo.json
+    - assets/translations/schenpen_sangmo.json
     - assets/icon.png
 
   fonts:
